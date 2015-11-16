@@ -75,7 +75,7 @@ public function getRequestableIndex() {
     }
  public function getAccessoryIndex()
     { 
-	 $accessories = Accessory::select(array('name','qty', 'category_id'))
+	 $accessories = Accessory::select(array('id','name','qty', 'category_id'))
         ->whereNull('deleted_at')
         ->orderBy('created_at', 'DESC');
 
@@ -84,9 +84,15 @@ public function getRequestableIndex() {
 
         return View::make('frontend/account/accessory-view', compact('accessories'));
     }
+public function getAccessoryView($accessoryId = null)
+    {
+         $accessory = Accessory::withTrashed()->find($accessoryId);
+
+        return View::make('frontend/account/view-accessory', compact('accessory'));
+    }
 public function getConsumableIndex()
     {
-         $consumables = Consumable::select(array('name','qty', 'category_id'))
+         $consumables = Consumable::select(array('id','name','qty', 'category_id'))
         ->whereNull('deleted_at')
         ->orderBy('created_at', 'DESC');
 
@@ -94,6 +100,12 @@ public function getConsumableIndex()
 
 
         return View::make('frontend/account/consumable-view', compact('consumables'));
+    }
+public function getConsumableView($consumableId = null)
+    {
+         $consumable = Consumable::withTrashed()->find($consumableId);
+
+        return View::make('frontend/account/view-consumable', compact('consumable'));
     }
 public function getLicenseIndex()
     {

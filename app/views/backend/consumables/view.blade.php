@@ -84,8 +84,9 @@
 <!-- side address column -->
 <div class="col-md-3 col-xs-12 address pull-right">
     <br /><br />
-    <h6>@lang('admin/consumables/general.about_consumables_title')</h6>
-    <p>@lang('admin/consumables/general.about_consumables_text') </p>
+
+        <img src="{{ Config::get('app.url') }}/img_consumables/{{$consumable->id}}.jpg" width=200>
+
 
 </div>
 

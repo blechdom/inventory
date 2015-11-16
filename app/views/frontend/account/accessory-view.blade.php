@@ -27,8 +27,9 @@
 
     <thead>
         <tr role="row">
-	 <th class="col-md-3" bSortable="true">@lang('admin/accessories/general.accessory_category')</th>
+	 <th class="col-md-2" bSortable="true">@lang('admin/accessories/general.accessory_category')</th>
             	<th class="col-md-5" bSortable="true">@lang('admin/accessories/table.title')</th>
+ 		<th class="col-md-2" bSortable="true">@lang('admin/accessories/general.image')</th>
  		<th class="col-md-2" bSortable="true">@lang('admin/accessories/general.total')</th>
         	 <th class="col-md-2" bSortable="true">@lang('admin/accessories/general.remaining')</th>
 	</tr>
@@ -37,8 +38,9 @@
       @foreach ($accessories as $accessory)
         <tr>
 	<td>{{{ $accessory->category->name }}}</td>
-  	<td>{{{ $accessory->name }}}</td>
-        <td>{{{ $accessory->qty }}} </td>
+  	<td><a href="{{ route('view-accessory', $accessory->id) }}">{{{ $accessory->name }}}</a></td>
+        <td><a href="{{ route('view-accessory', $accessory->id) }}"><img src="{{ Config::get('app.url') }}/img_accessories/{{$accessory->id}}.jpg" height=50px /></a></td>
+	  <td>{{{ $accessory->qty }}} </td>
         <td>{{{ $accessory->numRemaining() }}}</td>
         </tr>
         @endforeach

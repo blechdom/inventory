@@ -70,7 +70,7 @@
 <br>		Notes: {{{ $asset->notes }}}<br>
 	@endif
 	<br>
-@if ($asset->assigned_to == 0)
+@if (($asset->assigned_to == 0)&&( $asset->assetstatus->name !='Facility Installed'))
        <a href="{{ route('account/request-asset', $asset->id) }}" class="btn btn-info btn-sm" title="@lang('button.request')">@lang('button.request')</a> <br><Br>
 @endif
     </div>

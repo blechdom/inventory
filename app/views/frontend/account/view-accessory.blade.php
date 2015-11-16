@@ -24,12 +24,21 @@
 
 <div class="row form-wrapper">
 
+
 <div class="table-responsive">
+	@if ( $accessory->category->name  != NULL)
+                Category: {{{ $accessory->category->name}}}<br>
+        @endif
+	@if ( $accessory->qty  != NULL)
+                Total Quantity: {{{ $accessory->qty}}}<br>
+        @endif
+	@if ( $accessory->numRemaining()  != NULL)
+                Number Remaining: {{{ $accessory->numRemaining()}}}<br>
+        @endif
     </div>
 </div>
-
-
-
+<br><Br>
+<img src="{{ Config::get('app.url') }}/img_accessories/{{$accessory->id}}.jpg" width=300 />
 
 
 @stop

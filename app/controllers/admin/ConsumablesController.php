@@ -363,7 +363,11 @@ class ConsumablesController extends AdminController
             {
                 return link_to('admin/consumables/'.$consumables->id.'/view', $consumables->name);
             })
-        ->addColumn('qty',function($consumables)
+        ->addColumn('img', function($consumables)
+	{
+                return "<a href='consumables/".$consumables->id."/view'><img src='".Config::get('app.url')."/img_consumables/".$consumables->id.".jpg' style='height:50px;' /></a>";
+	})
+	->addColumn('qty',function($consumables)
             {
                 return $consumables->qty;
             })
@@ -373,7 +377,7 @@ class ConsumablesController extends AdminController
             })
         ->addColumn($actions)
         ->searchColumns('name','qty','numRemaining','actions')
-        ->orderColumns('name','qty','numRemaining','actions')
+        ->orderColumns('name','qty','img','numRemaining','actions')
         ->make();
     }
 

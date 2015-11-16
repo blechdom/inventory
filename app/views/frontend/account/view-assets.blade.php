@@ -93,7 +93,8 @@ View Assets for  {{{ $user->fullName() }}} ::
                                 <tbody>
                                     @foreach ($user->accessories as $accessory)
                                     <tr>
-                                        <td>{{{ $accessory->name }}}</td>
+                                        <td><a href="{{route('view-accessory', $accessory->id) }}">
+					{{{ $accessory->name }}}</a></td>
                                     </tr>
                                     @endforeach
                                 </tbody>
@@ -116,7 +117,7 @@ View Assets for  {{{ $user->fullName() }}} ::
                                 <tbody>
                                     @foreach ($user->consumables as $consumable)
                                     <tr>
-                                        <td>{{{ $consumable->name }}}</td>
+                                        <td><a href="{{route('view-consumable', $consumable->id)}}">{{{ $consumable->name }}}</a></td>
                                     </tr>
                                     @endforeach
                                 </tbody>

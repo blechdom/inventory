@@ -559,8 +559,10 @@
 
 	#Accessory-View
  	Route::get( 'accessory-view', [ 'as' => 'accessory-view', 'uses' => 'ViewAssetsController@getAccessoryIndex' ] );	
+	Route::get( '{accessoryId}/view-accessory', [ 'as' => 'view-accessory', 'uses' => 'ViewAssetsController@getAccessoryView' ] );
 	#Consumable-View
 	 Route::get( 'consumable-view', [ 'as' => 'consumable-view', 'uses' => 'ViewAssetsController@getConsumableIndex' ] );
+	  Route::get( '{consumableId}/view-consumable', [ 'as' => 'view-consumable', 'uses' => 'ViewAssetsController@getConsumableView' ] );
 	#License-View
         Route::get( 'license-view', [ 'as' => 'license-view', 'uses' => 'ViewAssetsController@getLicenseIndex' ] );
 	Route::get( 'request-license/{licenseId}', [ 'as' => 'account/request-license', 'uses' => 'ViewAssetsController@getLicenseRequest' ]);

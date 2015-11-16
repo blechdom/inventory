@@ -484,7 +484,11 @@ class AccessoriesController extends AdminController
             {
                 return link_to('admin/accessories/'.$accessories->id.'/view', $accessories->name);
             })
-        ->addColumn('qty',function($accessories)
+        ->addColumn('img', function($accessories)
+	{
+		return "<a href='accessories/".$accessories->id."/view'><img src='".Config::get('app.url')."/img_accessories/".$accessories->id.".jpg' style='height:50px;' /></a>";
+	})
+	->addColumn('qty',function($accessories)
             {
                 return $accessories->qty;
             })

@@ -18,10 +18,10 @@
 
 <div class="user-profile">
     <div class="row profile">
-        <div class="col-md-9 bio">
+        <div class="col-md-12">
             {{ Datatable::table()
                 ->addColumn(Lang::get('admin/accessories/table.title'),
-                	  
+			Lang::get('admin/accessories/general.image'), 
 		          Lang::get('admin/accessories/general.total'),
                             Lang::get('admin/accessories/general.remaining'),
                             Lang::get('table.actions'))
@@ -92,15 +92,6 @@
                         )
                     )
                 ->render() }}
-        </div>
-
-
-        <!-- side address column -->
-        <div class="col-md-3 col-xs-12 address pull-right">
-            <br /><br />
-            <h6>@lang('admin/accessories/general.about_accessories_title')</h6>
-            <p>@lang('admin/accessories/general.about_accessories_text') </p>
-
         </div>
     </div>
 </div>

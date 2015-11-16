@@ -89,9 +89,7 @@
     </div>
 
     <br /><br />
-    <h6>@lang('admin/accessories/general.about_accessories_title')</h6>
-    <p>@lang('admin/accessories/general.about_accessories_text') </p>
-
+	<img src="{{ Config::get('app.url') }}/img_accessories/{{$accessory->id}}.jpg" width=200>
 </div>
 
 @stop
