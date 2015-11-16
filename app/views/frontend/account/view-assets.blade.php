@@ -27,7 +27,7 @@ View Assets for  {{{ $user->fullName() }}} ::
             <div class="row profile">
 
                     <!-- bio, new note & orders column -->
-                    <div class="col-md-10 bio">
+                    <div class="col-md-12">
                         <div class="profile-box">
 
                         @if ($user->deleted_at != NULL)
@@ -87,7 +87,7 @@ View Assets for  {{{ $user->fullName() }}} ::
                                                         <table class="display">
                                 <thead>
                                     <tr>
-                                        <th class="col-md-3">Accessory Name</th>
+                                        <th class="col-md-6">Accessory Name</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -111,7 +111,7 @@ View Assets for  {{{ $user->fullName() }}} ::
                                                         <table class="display">
                                 <thead>
                                     <tr>
-                                        <th class="col-md-3">Consumable Name</th>
+                                        <th class="col-md-6">Consumable Name</th>
                                     </tr>
                                 </thead>
                                 <tbody>

@@ -38,5 +38,7 @@ return array(
     'update'			=> 'Asset Update',
     'warranty'			=> 'Warranty',
     'years'				=> 'years',
+	'location'		=> 'Location', 
 )
+
 ;

@@ -160,7 +160,19 @@
             @endif
             </div>
         @endif
-
+	
+        @if ($asset->assetloc->name)
+                <div class="col-md-12" style="padding-bottom: 5px;">
+                  <strong>@lang('admin/hardware/form.location'):</strong>
+                 {{{ $asset->assetloc->name }}}
+                </div>
+        @endif
+	@if ($asset->notes)
+		<div class="col-md-12" style="padding-bottom: 5px;">
+      	          <strong>@lang('admin/hardware/form.notes'):</strong>
+                 {{{ nl2br(e($asset->notes)) }}}
+		</div>
+	@endif
 
 
 
@@ -355,14 +367,6 @@
 </div>
         <!-- side address column -->
         <div class="col-md-3 col-xs-12 address pull-right">
-
-        	<!-- Asset notes -->
-@if ($asset->notes)
-
-		<h6>@lang('admin/hardware/form.notes'):</h6>
-		 <div class="break-word">{{ nl2br(e($asset->notes)) }}</div>
-
-@endif
 
             @if ($qr_code->display)
             <h6>@lang('admin/hardware/form.qr')</h6>
