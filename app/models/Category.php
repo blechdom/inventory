@@ -24,18 +24,29 @@ class Category extends Elegant
     {
         return $this->hasManyThrough('Asset', 'Model')->count();
     }
-
+	
+    public function requestableassetscount()
+    {
+        return $this->hasManyThrough('Asset', 'Model')
+        ->where( 'requestable', '=', '1')
+        ->count();
+    }
     public function accessoriescount()
     {
         return $this->hasMany('Accessory')->count();
     }
-
+    public function consumablescount()
+    {
+	return $this->hasMany('Consumable')->count();
+    }
     public function accessories()
     {
         return $this->hasMany('Accessory');
     }
-
-
+    public function consumables()
+    {
+	return $this->hasMany('Consumable');
+    } 
     public function assets()
     {
         return $this->hasManyThrough('Asset', 'Model');

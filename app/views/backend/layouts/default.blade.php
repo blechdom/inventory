@@ -364,7 +364,7 @@
 	<li{{ (Request::is('account/requestable-assets') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
                 <a href="{{ route('requestable-assets') }}">
                     <i class="fa fa-laptop"></i>
-                    <span>@lang('admin/hardware/general.requestable')</span>
+                    <span>Asset Request</span>
                 </a>
             </li>
 		<li{{ (Request::is('account/accessory-view') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
@@ -379,6 +379,12 @@
                     <span>@lang('general.consumables')</span>
                 </a>
             </li>
+	<li{{ (Request::is('account/categories') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
+                            <a href="{{ route('categories') }}">
+                                <i class="fa fa-check"></i>
+                        <span>@lang('general.categories')</span>
+                            </a>
+                        </li>
 <li{{ (Request::is('account/license-view') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
                 <a href="{{ route('license-view') }}">
                     <i class="fa fa-certificate"></i>
@@ -470,14 +476,9 @@
 
         <div id="footer" class="col-md-offset-2 col-md-9 col-sm-12 col-xs-12 text-center">
 		                <div class="muted credit hidden-xs">
-	                  			<a target="_blank" href="http://snipeitapp.com">Snipe IT</a> is a free open source
-					  		project by
-					  			<a target="_blank" href="http://twitter.com/snipeyhead">@snipeyhead</a>.
-						  		<a target="_blank" href="https://github.com/snipe/snipe-it">Fork it</a> |
-						  		<a target="_blank" href="http://docs.snipeitapp.com/">Documentation</a> |
-						  		<a target="_blank" href="http://docs.snipeitapp.com/translations.html">Translate It! </a> |
-						  		<a target="_blank" href="https://github.com/snipe/snipe-it/issues?state=open">Report a Bug</a>
-						  		 &nbsp; &nbsp; ({{{  Config::get('version.app_version') }}})
+	                  			<a target="_blank" href="http://danm.ucsc.edu">Digital Arts and New Media</a> |
+					  			<a target="_blank" href="http://arts.ucsc.edu">Arts Division</a> |
+							 <a target="_blank" href="http://www.ucsc.edu">UC Santa Cruz</a> 
                   		</div>
         </div>
     </footer>

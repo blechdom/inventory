@@ -4,7 +4,7 @@
 @section('title')
 
  {{{ $accessory->name }}}
- @lang('general.accessory') ::
+::
 @parent
 @stop
 
@@ -18,7 +18,6 @@
            <a href="{{ URL::to('admin/accessories') }}" class="btn-flat gray pull-right"><i class="fa fa-arrow-left icon-white"></i>  @lang('general.back')</a>        </div>
         <h3>
             {{{ $accessory->name }}}
- @lang('general.accessory')
 
         </h3>
     </div>

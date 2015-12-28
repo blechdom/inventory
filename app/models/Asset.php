@@ -238,7 +238,6 @@
                      ->whereNull( 'deleted_at', 'and' )
                      ->count();
         }
-
         /**
          * Get total assets not checked out
          */
@@ -445,7 +444,6 @@
 
             return $query->where( 'physical', '=', '1' );
         }
-
         /**
          * Query builder scope for pending assets
          *

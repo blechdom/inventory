@@ -552,7 +552,11 @@
 	Route::get( '{assetId}/view-item', [ 'as' => 'view-item', 'uses' => 'ViewAssetsController@getViewItem' ] );
 	Route::get( 'request-asset/{assetId}',
             [ 'as' => 'account/request-asset', 'uses' => 'ViewAssetsController@getRequestAsset' ] );
-
+	# Categories
+ 	Route::get( 'categories',
+            [ 'as' => 'categories', 'uses' => 'ViewAssetsController@getCategories' ] );
+	Route::get( 'categories/{categoryID}',
+                    [ 'as' => 'category-view', 'uses' => 'ViewAssetsController@getCategoryView' ] );
 	#Facility Equipment
   	Route::get( 'facility-view',
             [ 'as' => 'facility-view', 'uses' => 'ViewAssetsController@getFacilityIndex' ] );

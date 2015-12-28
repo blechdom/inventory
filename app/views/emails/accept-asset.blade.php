@@ -4,7 +4,7 @@
 <p>Hello {{{ $first_name }}},</p>
 
 
-<p>A new item has been checked out to under your name, details are below. 
+<p>An item has been checked out under your name, details are below. 
 
 <table>
 	<tr>

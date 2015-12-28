@@ -9,5 +9,5 @@ return array(
     'total' 			                 => 'Total',
     'update'                            => 'Update Consumable',
     'consumables_category'		=> 'Consumable Category',
-	'image'			=>	'IMAGE',
+	'image'			=>	'Image',
 );

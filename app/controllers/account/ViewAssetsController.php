@@ -12,6 +12,7 @@ use Actionlog;
 use Lang;
 use Accessory;
 use Consumable;
+use Category;
 use License;
 use DB;
 use Mail;
@@ -45,6 +46,7 @@ class ViewAssetsController extends AuthorizedController
 			->select('assets.id', 'assets.name', 'assets.asset_tag', 'assets.assigned_to', 'assets.model_id', 'asset_logs.asset_id', 'asset_logs.expected_checkin', 'asset_logs.checkedout_to')
 			->where('asset_logs.checkedout_to', $user->id)
 			->where('assets.assigned_to', $user->id)
+			->where('asset_logs.action_type', 'checkout')
 			->orderBy('asset_logs.expected_checkin', 'desc')
 			->get();
 
@@ -60,8 +62,45 @@ class ViewAssetsController extends AuthorizedController
             }
 
 	}
+public function getCategories()
+    {
+        
+	// Show the page
+	$categories = Category::select(array('id', 'name', 'category_type'))
+	->whereNull('deleted_at');
+	
+	$categories = $categories->get();
+        return View::make('frontend/account/categories', compact('categories'));
+    }
+public function getCategoryView($categoryID = null)
+    {
+        $category = Category::find($categoryID);
+	if (isset($category->id)) {	
+		if ($category->category_type=='asset')
+		{	
+			$assets = $category->assets;
+			return View::make('frontend/account/category-assets', compact('user', 'assets', 'category'));
+		}
+		elseif ($category->category_type=='accessory')
+		{
+			$accessories = $category->accessories;
+			return View::make('frontend/account/category-accessories', compact('user', 'accessories', 'category'));
+		}
+		elseif ($category->category_type=='consumable')
+                {
+                        $consumables = $category->consumables;
+                        return View::make('frontend/account/category-consumables', compact('user', 'consumables', 'category'));
+                }
+        } else {
+            // Prepare the error message
+            $error = Lang::get('admin/categories/message.does_not_exist', compact('id'));
+
+            // Redirect to the user management page
+            return Redirect::route('categories')->with('error', $error);
+        }
 
 
+    }
 public function getRequestableIndex() {
 
 	$assets = Asset::with('model','defaultLoc')->Hardware()->RequestableAssets()->get();
