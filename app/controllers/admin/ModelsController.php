@@ -379,6 +379,12 @@ class ModelsController extends AdminController
         });
 
         return Datatable::collection($models)
+	->addColumn('thumbnail', function($models) {
+		if ($models->image) {
+			$thumbnail = '<center><img src="/uploads/models/'.$models->image.'" height=50px></center>';
+            		return $thumbnail;
+		}
+        })
         ->addColumn('manufacturer', function($models) {
             return $models->manufacturer->name;
         })

@@ -23,7 +23,9 @@
 
 <div class="row form-wrapper">
     {{ Datatable::table()
-    ->addColumn(Lang::get('general.manufacturer'),
+    ->addColumn(
+	'Thumbnail',
+	Lang::get('general.manufacturer'),
         Lang::get('admin/models/table.title'),
         Lang::get('admin/models/table.modelnumber'),
         Lang::get('admin/models/table.numassets'),

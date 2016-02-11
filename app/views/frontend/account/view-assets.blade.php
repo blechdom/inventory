@@ -59,7 +59,7 @@ View Assets for  {{{ $user->fullName() }}} ::
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($due_dates as $asset)
+                                    @foreach ($user->assets as $asset)
                                     <tr>
                                         <td><a href="{{ route('view-item', $asset->id) }}">{{{ $asset->name}}}</a></td>
                                         <td>{{{ $asset->asset_tag }}}</td>
