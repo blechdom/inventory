@@ -63,8 +63,8 @@ Your Profile
             {{ $errors->first('website', '<br><span class="alert-msg"><i class="fa fa-times"></i> :message</span>') }}
         </div>
     </div>
-<!--
-    
+
+    <!-- Gravatar Email -->
     <div class="form-group {{ $errors->has('gravatar') ? ' has-error' : '' }}">
         <label for="gravatar" class="col-md-2 control-label">@lang('general.gravatar_email')
          <small>(Private)</small></label>
@@ -76,7 +76,7 @@ Your Profile
         </p>
         </div>
     </div>
--->
+
 	<!-- Avatar -->
     @if ($user->avatar)
         <div class="form-group {{ $errors->has('avatar_delete') ? 'has-error' : '' }}">
@@ -87,15 +87,7 @@ Your Profile
                 {{ $errors->first('avatar_delete', '<br><span class="alert-msg">:message</span>') }}
             </div>
         </div>
-       @else
- <div class="form-group {{ $errors->has('avatar_delete') ? 'has-error' : '' }}">
-            <label class="col-md-2 control-label" for="avatar_delete"></label>
-            <div class="col-md-5">
-                <img src="/uploads/avatar.jpg" class="avatar img-circle">
-<br>      
-      </div>
-</div>
-                    @endif
+    @endif
 
 	<div class="form-group {{ $errors->has('avatar') ? 'has-error' : '' }}">
 		<label class="col-md-2 control-label" for="avatar">@lang('general.avatar_upload')</label>

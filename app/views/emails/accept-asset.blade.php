@@ -4,7 +4,7 @@
 <p>Hello {{{ $first_name }}},</p>
 
 
-<p>An item has been checked out under your name, details are below. 
+<p>A new item has been checked out under your name, details are below.
 
 <table>
 	<tr>
@@ -22,6 +22,16 @@
 			</td>
 			<td>
 				<strong>{{{ $item_tag }}}</strong>
+			</td>
+		</tr>
+	@endif
+  @if ($item_serial)
+		<tr>
+			<td style="background-color:#ccc">
+				Serial:
+			</td>
+			<td>
+				<strong>{{{ $item_serial }}}</strong>
 			</td>
 		</tr>
 	@endif
@@ -54,21 +64,21 @@
 		</tr>
 	@endif
 </table>
-	
+
 @if (($require_acceptance==1) && ($eula!=''))
-	<p>
-	Click on the link at the bottom to confirm that you read and agree to the terms of use, and have received the asset.
-</p>
+
+	Please read the terms of use below, and click on the link at the bottom to confirm that you read and agree to the terms of use, and have received the asset.
+
 @elseif (($require_acceptance==1) && ($eula==''))
 
-<p>	Please click on the link at the bottom to confirm that you have received the asset.
-</p>
+	Please click on the link at the bottom to confirm that you have received the asset.
+
 @elseif (($require_acceptance==0) && ($eula!=''))
 
-<p>	Please read the terms of use below.
-</p>
+	Please read the terms of use below.
+
 @endif
-	
+
 </p>
 
 <p><blockquote>{{ $eula }}</blockquote></p>
@@ -77,5 +87,5 @@
 <p><strong><a href="{{{ Config::get('app.url') }}}/account/accept-asset/{{ $log_id }}">I have read and agree to the terms of use, and have received this item.</a></strong></p>
 @endif
 
-<p>love, {{{ Setting::getSettings()->site_name }}}</p>
+<p>{{{ Setting::getSettings()->site_name }}}</p>
 @stop

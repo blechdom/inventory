@@ -16,7 +16,7 @@
 
 <div class="row header">
     <div class="col-md-12">
-       <h3>@yield('title0')</h3>
+        <h3>@yield('title0')</h3>
     </div>
 </div>
 
@@ -29,49 +29,36 @@
 
     <thead>
         <tr role="row">
-<th class="col-md-2" bSortable="true">@lang('general.category')</th>
-           <th class="col-md-2" bSortable="false">Thumbnail</th>
-            <th class="col-md-4" bSortable="true">@lang('admin/hardware/table.asset_model')</th>
-  <th class="col-md-1" bSortable="true">@lang('general.manufacturer')</th>            
-<th class="col-md-1" bSortable="true">@lang('admin/hardware/table.asset_tag')</th>
-<th class="col-md-1" bSortable="true">@lang('admin/hardware/table.status')</th>
-
-            <th class="col-md-1 actions" bSortable="false">@lang('table.actions')</th>
+            <th class="col-md-3" bSortable="true">@lang('admin/hardware/table.asset_model')</th>
+            @if (Setting::getSettings()->display_asset_name)
+            <th class="col-md-3" bSortable="true">@lang('general.name')</th>
+            @endif
+            <th class="col-md-2" bSortable="true">@lang('admin/hardware/table.serial')</th>
+            <th class="col-md-2" bSortable="true">@lang('admin/hardware/table.location')</th>
+            <th class="col-md-2 actions" bSortable="false">@lang('table.actions')</th>
         </tr>
     </thead>
     <tbody>
 
         @foreach ($assets as $asset)
         <tr>
-  <td>{{{ $asset->model->category->name}}} </td>
-            <td align="center" bgcolor="#FFF">
-@if ( $asset->model->image  != NULL)
-<a href="{{ route('view-item', $asset->id) }}"><img src="/uploads/models/{{{ $asset->model->image }}}" style="height:50px;" /></a>
-@else 
-<a href="{{ route('view-item', $asset->id) }}"><img src="/uploads/Toolbox-icon.png" style="height:50px;" /></a>
-@endif
-</td>
-	<td> <a href="{{ route('view-item', $asset->id) }}">{{{ $asset->model->name}}}</a></td>
- 	<td>{{{ $asset->model->manufacturer->name}}} </td>
- 	<td>{{{ $asset->asset_tag }}}</td>
-	<td>
+            <td>{{{ $asset->model->name }}}</td>
 
-		@if (($asset->status_id ) && ($asset->status_id > 0))
-                        <!-- Status Info -->
-                @if ($asset->assetstatus)
-                
-
-		        @if (($asset->assetstatus->deployable=='1') && ($asset->assigned_to > 0))
-                            @lang('general.deployed')
-                        @else
-                            {{{ $asset->assetstatus->name }}}
-                        @endif
-
-                 @endif
+            @if (Setting::getSettings()->display_asset_name)
+                <td>{{{ $asset->name }}}</td>
             @endif
 
-	</td>
-        <td>
+            <td>{{{ $asset->serial }}}</td>
+            <td>
+                @if ($asset->assigneduser && $asset->assetloc)
+                    	{{{ $asset->assetloc->name }}}
+                @elseif ($asset->defaultLoc)
+                    	{{{ $asset->defaultLoc->name }}}
+
+                @endif
+
+            </td>
+            <td>
                 <a href="{{ route('account/request-asset', $asset->id) }}" class="btn btn-info btn-sm" title="@lang('button.request')">@lang('button.request')</a>
             </td>
 

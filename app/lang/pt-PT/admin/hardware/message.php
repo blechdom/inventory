@@ -53,6 +53,11 @@ return array(
         'error'   		=> 'Não foi possível devolver o artigo, por favor tente novamente',
         'success' 		=> 'Artigo devolvido com sucesso.',
         'user_does_not_exist' => 'O utilizador é inválido. Por favor, tente novamente.'
+    ),
+
+    'requests' => array(
+        'error'   		=> 'Ativo não foi solicitado, por favor tente novamente',
+        'success' 		=> 'Ativo solicitado com sucesso.',
     )
 
 );

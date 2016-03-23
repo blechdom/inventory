@@ -1,5 +1,7 @@
 <?php
 
+//use CustomField;
+
 class Model extends Elegant
 {
     use SoftDeletingTrait;
@@ -8,7 +10,7 @@ class Model extends Elegant
 
     // Declare the rules for the form validation
     protected $rules = array(
-        'name'   		=> 'required|alpha_space|min:2|max:255|unique:models,deleted_at,NULL',
+        'name'   		=> 'required|alpha_space|min:2|max:255',
         'modelno'   		=> 'alpha_space|min:1|max:255',
         'category_id'   	=> 'required|integer',
         'manufacturer_id'   => 'required|integer',
@@ -39,6 +41,21 @@ class Model extends Elegant
     public function manufacturer()
     {
         return $this->belongsTo('Manufacturer','manufacturer_id');
+    }
+
+    public function fieldset()
+    {
+        return $this->belongsTo('CustomFieldset','fieldset_id');
+    }
+
+    public function getNote() {
+
+	    $Parsedown = new Parsedown();
+
+	    if ($this->note) {
+		    return $Parsedown->text(e($this->note));
+	    }
+
     }
 
     /**
@@ -74,6 +91,37 @@ class Model extends Elegant
     {
 
         return $query->whereIn( 'category_id', $categoryIdListing );
+    }
+
+    /**
+    * Query builder scope to search on text
+    *
+    * @param  Illuminate\Database\Query\Builder  $query  Query builder instance
+    * @param  text                              $search      Search term
+    *
+    * @return Illuminate\Database\Query\Builder          Modified query builder
+    */
+    public function scopeTextSearch($query, $search)
+    {
+
+        return $query->where('name', 'LIKE', "%$search%")
+            ->orWhere('modelno', 'LIKE', "%$search%")
+            ->orWhere(function($query) use ($search) {
+                $query->whereHas('depreciation', function($query) use ($search) {
+                    $query->where('name','LIKE','%'.$search.'%');
+                });
+            })
+            ->orWhere(function($query) use ($search) {
+                $query->whereHas('category', function($query) use ($search) {
+                    $query->where('name','LIKE','%'.$search.'%');
+                });
+            })
+            ->orWhere(function($query) use ($search) {
+                $query->whereHas('manufacturer', function($query) use ($search) {
+                    $query->where('name','LIKE','%'.$search.'%');
+                });
+            });
+
     }
 
 }

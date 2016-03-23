@@ -49,6 +49,7 @@
                        @if ($activity->action_type!='requested')
                             <a href="{{ route('view/user', $activity->user_id) }}">{{{ $activity->adminlog->fullName() }}}</a>
                        @endif
+
                        </td>
 
 			       <td>
@@ -111,7 +112,7 @@
                 {label: '@lang('general.undeployable')', value: {{ $asset_stats['undeployable']['percent'] }} },
                 {label: '@lang('general.archived')', value: {{ $asset_stats['archived']['percent'] }} },
             ],
-            colors: ["#2dbfc6", "#76bdee", "#c4dafe"],
+            colors: ["#30a1ec", "#76bdee", "#c4dafe"],
             formatter: function (y) { return y + "%" }
         });
 

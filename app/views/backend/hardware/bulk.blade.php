@@ -11,6 +11,16 @@
 
 @section('content')
 
+<style>
+.radio {
+  min-height: 10px;
+  padding-right: 10px;
+}
+input[type="radio"] {
+  margin-right: 10px;
+}
+</style>
+
 <div class="row header">
     <div class="col-md-12">
             <a href="{{ URL::previous() }}" class="btn-flat gray pull-right right"><i class="fa fa-arrow-left icon-white"></i> @lang('general.back')</a>
@@ -56,6 +66,18 @@
                     </div>
             </div>
 
+            <!-- Asset Model -->
+            <div class="form-group {{ $errors->has('model_id') ? ' has-error' : '' }}">
+                <label for="model_id" class="col-md-2 control-label">
+                  @lang('admin/hardware/form.model')
+                </label>
+                    <div class="col-md-7">
+                        {{ Form::select('model_id', $models_list , Input::old('model_id'), array('class'=>'select2', 'style'=>'width:350px')) }}
+                        {{ $errors->first('model_id', '<br><span class="alert-msg"><i class="fa fa-times"></i> :message</span>') }}
+                    </div>
+            </div>
+
+
             <!-- Default Location -->
             <div class="form-group {{ $errors->has('status_id') ? ' has-error' : '' }}">
                 <label for="status_id" class="col-md-2 control-label">@lang('admin/hardware/form.default_location')</label>
@@ -69,7 +91,7 @@
             <div class="form-group {{ $errors->has('purchase_cost') ? ' has-error' : '' }}">
                 <label for="purchase_cost" class="col-md-2 control-label">@lang('admin/hardware/form.cost')</label>
                 <div class="input-group col-md-3">
-	                <span class="input-group-addon">@lang('general.currency')</span>
+	                <span class="input-group-addon">{{{ Setting::first()->default_currency }}}</span>
                     <input type="text" class="form-control" placeholder="@lang('admin/hardware/form.cost')" name="purchase_cost" id="purchase_cost" value="{{{ Input::old('purchase_cost') }}}">
 
                 {{ $errors->first('purchase_cost', '<br><span class="alert-msg"><i class="fa fa-times"></i> :message</span>') }}
@@ -83,6 +105,17 @@
                     {{ Form::select('supplier_id', $supplier_list , Input::old('supplier_id'), array('class'=>'select2', 'style'=>'min-width:350px')) }}
                     {{ $errors->first('supplier_id', '<br><span class="alert-msg"><i class="fa fa-times"></i> :message</span>') }}
                 </div>
+            </div>
+
+            <!-- Company -->
+            <div class="form-group {{ $errors->has('company_id') ? ' has-error' : '' }}">
+                <label for="company_id" class="col-md-2 control-label">
+                  @lang('general.company')
+                </label>
+                    <div class="col-md-7">
+                        {{ Form::select('company_id', $companies_list , Input::old('company_id'), array('class'=>'select2', 'style'=>'width:350px')) }}
+                        {{ $errors->first('company_id', '<br><span class="alert-msg"><i class="fa fa-times"></i> :message</span>') }}
+                    </div>
             </div>
 
             <!-- Order Number -->
@@ -106,15 +139,21 @@
             </div>
 
             <!-- Requestable -->
-			<div class="form-group">
-				<div class="col-sm-offset-2 col-sm-10">
-				  <div class="checkbox">
-					<label>
-					  <input type="checkbox" value="1" name="requestable" id="requestable"> @lang('admin/hardware/form.requestable')
-					</label>
-				  </div>
-				</div>
-		  	</div>
+
+            <div class="form-group {{ $errors->has('warranty_months') ? ' has-error' : '' }}">
+                <label for="requestable" class="col-md-2 control-label">@lang('admin/hardware/form.requestable')</label>
+                <div class="col-md-10">
+                    <label class="radio">
+                      <input type="radio" name="requestable" value="1"> Yes
+                    </label>
+                    <label class="radio">
+                      <input type="radio" name="requestable" value="0"> No
+                    </label>
+                    <label class="radio">
+                      <input type="radio" name="requestable" value=""> Do Not Change
+                    </label>
+                </div>
+            </div>
 
 
             @foreach ($assets as $key => $value)

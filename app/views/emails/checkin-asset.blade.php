@@ -15,7 +15,7 @@
 			<strong>{{{ $item_name }}}</strong>
 		</td>
 	</tr>
-		@if ($item_tag)
+	@if ($item_tag)
 		<tr>
 			<td style="background-color:#ccc">
 				Asset Tag:
@@ -45,5 +45,5 @@
 	@endif
 </table>
 
-<p>love, {{{ Setting::getSettings()->site_name }}}</p>
+<p>{{{ Setting::getSettings()->site_name }}}</p>
 @stop

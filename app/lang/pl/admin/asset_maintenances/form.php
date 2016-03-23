@@ -1,14 +1,14 @@
 <?php
 
     return [
-        'asset_maintenance_type' => 'Asset Maintenance Type',
+        'asset_maintenance_type' => 'Typ',
         'title'                  => 'Tytuł',
         'start_date'             => 'Data rozpoczęcia',
-        'completion_date'        => 'Completion Date',
+        'completion_date'        => 'Ukończone',
         'cost'                   => 'Cena',
-        'is_warranty'            => 'Warranty Improvement',
-        'asset_maintenance_time' => 'Asset Maintenance Time (in days)',
+        'is_warranty'            => 'Wydłużenie gwarancji',
+        'asset_maintenance_time' => 'Dni',
         'notes'                  => 'Notatki',
-        'update'                 => 'Update Asset Maintenance',
-        'create'                 => 'Create Asset Maintenance'
+        'update'                 => 'Uaktualnij',
+        'create'                 => 'Utwórz'
     ];

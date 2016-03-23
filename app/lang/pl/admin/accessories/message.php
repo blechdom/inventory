@@ -2,17 +2,17 @@
 
 return array(
 
-    'does_not_exist' => 'Kategoria nie istnieje.',
+    'does_not_exist' => 'Akcesorium nie istnieje.',
     'assoc_users'	 => 'Akcesoria z tej kategorii zostały wydane do :count użytkowników. Zbierz akcesoria i spróbuj ponownie. ',
 
     'create' => array(
-        'error'   => 'Kategoria nie została stworzona, spróbuj ponownie.',
-        'success' => 'Kategoria stworzona pomyślnie.'
+        'error'   => 'Akcesorium nie utworzono, spróbuj ponownie.',
+        'success' => 'Akcesorium utworzono pomyślnie.'
     ),
 
     'update' => array(
-        'error'   => 'Kategoria nie została zaktualizowana, spróbuj ponownie',
-        'success' => 'Kategoria została pomyślnie zaktualizowana.'
+        'error'   => 'Nie zaktualizowano Akcesorium, spróbuj ponownie',
+        'success' => 'Akcesorium utworzono pomyślnie.'
     ),
 
     'delete' => array(
@@ -20,7 +20,7 @@ return array(
         'error'   => 'Wystąpił błąd podczas usuwania. Spróbuj ponownie.',
         'success' => 'Kategoria usunięta pomyślnie.'
     ),
-    
+
      'checkout' => array(
         'error'   		=> 'Akcesoria nie zostały przypisane, spróbuj ponownie',
         'success' 		=> 'Akcesoria przypisany pomyślnie.',

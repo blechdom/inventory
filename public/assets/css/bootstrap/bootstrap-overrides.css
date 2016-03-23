@@ -6,9 +6,8 @@ h1,h2,h3,h4,h5,h6{
 }
 
 /* COMPONENTS */
-.navbar-toggle .icon-bar {
-background-color: #2dbfc6;
-}
+
+
 /* labels */
 .label, .badge {
 	font-weight: lighter;
@@ -314,7 +313,6 @@ textarea::-webkit-input-placeholder {
 .table td{
 	color: #526273;
 	border-top-color: #edf2f7 !important;
-	vertical-align: middle !important;
 }
 .table th.align-right,
 .table td.align-right {

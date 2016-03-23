@@ -24,29 +24,40 @@ class Category extends Elegant
     {
         return $this->hasManyThrough('Asset', 'Model')->count();
     }
-	
-    public function requestableassetscount()
-    {
-        return $this->hasManyThrough('Asset', 'Model')
-        ->where( 'requestable', '=', '1')
-        ->count();
-    }
+
     public function accessoriescount()
     {
         return $this->hasMany('Accessory')->count();
     }
-    public function consumablescount()
-    {
-	return $this->hasMany('Consumable')->count();
-    }
+
     public function accessories()
     {
         return $this->hasMany('Accessory');
     }
+
+    public function consumablesCount()
+    {
+        return $this->hasMany('Consumable')->count();
+    }
+
     public function consumables()
     {
-	return $this->hasMany('Consumable');
-    } 
+        return $this->hasMany('Consumable');
+    }
+
+    public function itemCount()
+    {
+        switch ($this->category_type) {
+            case 'asset':
+                return $this->assetscount();
+            case 'accessory':
+                return $this->accessoriescount();
+            case 'consumable':
+                return $this->consumablesCount();
+        }
+        return '0';
+    }
+
     public function assets()
     {
         return $this->hasManyThrough('Asset', 'Model');
@@ -84,6 +95,24 @@ class Category extends Elegant
     {
 
         return $query->where( 'require_acceptance', '=', true );
+    }
+    
+    /**
+    * Query builder scope to search on text
+    *
+    * @param  Illuminate\Database\Query\Builder  $query  Query builder instance
+    * @param  text                              $search      Search term
+    *
+    * @return Illuminate\Database\Query\Builder          Modified query builder
+    */
+    public function scopeTextSearch($query, $search)
+    {
+
+        return $query->where(function($query) use ($search)
+        {
+            $query->where('name', 'LIKE', '%'.$search.'%')
+            ->orWhere('category_type', 'LIKE', '%'.$search.'%');
+        });
     }
 
 }

@@ -2,25 +2,25 @@
 
 return array(
 
-    'does_not_exist' => 'Category does not exist.',
+    'does_not_exist' => 'Accesoriul nu exista.',
     'assoc_users'	 => 'This accessory currently has :count items checked out to users. Please check in the accessories and and try again. ',
 
     'create' => array(
-        'error'   => 'Category was not created, please try again.',
-        'success' => 'Category created successfully.'
+        'error'   => 'Accesoriul nu a fost adaugat, va rugam incercati din nou.',
+        'success' => 'Accesoriu adaugat cu succes.'
     ),
 
     'update' => array(
-        'error'   => 'Category was not updated, please try again',
-        'success' => 'Category updated successfully.'
+        'error'   => 'Accesoriul nu a fost actualizat, va rugam incercati din nou,',
+        'success' => 'Accesoriu actualizat cu succes.'
     ),
 
     'delete' => array(
-        'confirm'   => 'Are you sure you wish to delete this category?',
-        'error'   => 'There was an issue deleting the category. Please try again.',
-        'success' => 'The category was deleted successfully.'
+        'confirm'   => 'Sunteti sigur ca vreti sa stergeti aceasta categorie?',
+        'error'   => 'A aparut o problema la stergerea categoriei. Va rugam incercati din nou.',
+        'success' => 'Categoria a fost stearsa.'
     ),
-    
+
      'checkout' => array(
         'error'   		=> 'Accessory was not checked out, please try again',
         'success' 		=> 'Accessory checked out successfully.',

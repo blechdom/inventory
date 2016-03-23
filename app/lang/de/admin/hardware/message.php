@@ -53,6 +53,11 @@ return array(
         'error'   		=> 'Asset konnte nicht eingebucht werden. Bitte versuchen Sie es erneut',
         'success' 		=> 'Asset wurde erfolgreich eingebucht.',
         'user_does_not_exist' => 'Dieser Benutzer existiert nicht. Bitte versuchen Sie es erneut.'
+    ),
+
+    'requests' => array(
+        'error'   		=> 'Das Asset wurde nicht angefordert, bitte versuchen Sie es erneut',
+        'success' 		=> 'Asset erfolgreich angefordert.',
     )
 
 );

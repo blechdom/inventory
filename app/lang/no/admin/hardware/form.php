@@ -1,7 +1,9 @@
 <?php
 
 return array(
-
+	'bulk_delete'		=> 'Bekreft sletting av flere enheter',
+  'bulk_delete_help'	=> 'Se gjennom listen over enheter som er valgt for sletting. Etter sletting er det mulig å gjenopprette enheter, men nåværende koblinger til brukere vil ikke lenger finnes.',
+  'bulk_delete_warn'	=> 'Du er i ferd med å slette :asset_count enheter.',
 	'bulk_update'		=> 'Masseoppdater eiendeler',
 	'bulk_update_help'	=> 'Dette skjemaet lar deg oppdatere flere eiendeler på en gang. Fyll kun ut feltene du ønsker å endre. Tomme felter forblir uendret. ',
 	'bulk_update_warn'	=> 'Du er på vei til å endre egenskapene til :asset_count eiendeler.',
@@ -20,7 +22,7 @@ return array(
     'expected_checkin'  => 'Forventet dato for innsjekk',
     'expires'			=> 'Utløper',
     'fully_depreciated'	=> 'Ferdig nedskrevet',
-    'help_checkout'		=> 'If you wish to assign this asset immediately, select "Ready to Deploy" from the status list above. ',
+    'help_checkout'		=> 'Hvis du ønsker å tildele denne eiendelen umiddelbart, velger du "klar til å distribuere" fra status listen ovenfor. ',
     'mac_address'		=> 'MAC-adresse',
     'manufacturer'		=> 'Produsent',
     'model'				=> 'Modell',

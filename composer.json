@@ -14,10 +14,12 @@
 	"require": {
 		"classpreloader/classpreloader": "1.*",
 		"symfony/console": "~2",
-        "symfony/yaml": "~2",
-        "symfony/config": "~2",
-        "symfony/stopwatch": "~2",
+    "symfony/yaml": "~2",
+    "symfony/config": "~2",
+    "symfony/stopwatch": "~2",
 		"laravel/framework": "4.2.17",
+    "doctrine/cache": "v1.5.4",
+    "doctrine/common": "v2.5.3",
 		"doctrine/dbal": "v2.4.2",
 		"cartalyst/sentry": "2.1.5",
 		"barryvdh/laravel-debugbar": "1.x",
@@ -72,5 +74,5 @@
 		"bin-dir": "vendor/bin"
 
 	},
-	"minimum-stability": "dev"
+	"minimum-stability": "stable"
 }

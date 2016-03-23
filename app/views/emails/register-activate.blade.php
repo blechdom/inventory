@@ -7,7 +7,7 @@
 
 <p><a href="{{ $activationUrl }}">{{ $activationUrl }}</a></p>
 
-<p>love,</p>
+<p>Best regards,</p>
 
 <p>{{{ Setting::getSettings()->site_name }}}</p>
 @stop

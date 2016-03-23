@@ -52,6 +52,11 @@ return array(
         'error'   		=> '资产还没有借入，请重试。',
         'success' 		=> '资产借入成功。',
         'user_does_not_exist' => '无效用户，请重试。'
+    ),
+
+    'requests' => array(
+        'error'   		=> '未能成功请求分配资产，请重试。',
+        'success' 		=> '成功请求资产',
     )
 
 );

@@ -13,14 +13,14 @@ return array(
     |
     */
 
-    'timezone' => 'America/Los_Angeles',
+    'timezone' => 'UTC',
 
     /*
     |--------------------------------------------------------------------------
     | Application Locale
     |--------------------------------------------------------------------------
     |
-    | This locale ties into the languaage files in app/lang, which contain the
+    | This locale ties into the language files in app/lang, which contain the
     | language files for each translation.
     |
     */

@@ -36,18 +36,15 @@
         <link rel="stylesheet" href="{{ asset('assets/css/compiled/user-list.css') }}" type="text/css" media="screen" />
         <link rel="stylesheet" href="{{ asset('assets/css/compiled/user-profile.css') }}" type="text/css" media="screen" />
 
-        <link rel="stylesheet" href="{{ asset('assets/css/lib/jquery.dataTables.css') }}" type="text/css" media="screen" />
-        <link rel="stylesheet" href="{{ asset('assets/css/compiled/dataTables.colVis.css') }}" type="text/css" media="screen" />
-        <link rel="stylesheet" href="{{ asset('assets/css/compiled/dataTables.tableTools.css') }}" type="text/css" media="screen" />
+        <link rel="stylesheet" href="{{ asset('assets/css/bootstrap/bootstrap-table.css') }}" type="text/css" media="screen" />
+
         <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/compiled/print.css') }}" media="print" />
         <link href="{{ asset('assets/css/bootstrap/bootstrap-overrides.css') }}" type="text/css" rel="stylesheet" />
 
 
         <!-- global header javascripts -->
         <script src="{{ asset('assets/js/jquery-latest.js') }}"></script>
-        <script src="{{ asset('assets/js/jquery.dataTables.min.js') }}"></script>
-        <script src="{{ asset('assets/js/dataTables.colVis.js') }}"></script>
-        <script src="{{ asset('assets/js/dataTables.tableTools.js') }}"></script>
+        <script src="{{ asset('assets/js/bootstrap.min.js') }}"></script>
 
         <script>
             window.snipeit = {
@@ -78,11 +75,11 @@
         @show
 
 		@if (Setting::getSettings()->header_color)
-			.navbar {
+			.navbar-inverse {
 				background-color: {{{ Setting::getSettings()->header_color }}};
 				background: -webkit-linear-gradient(top,  {{{ Setting::getSettings()->header_color }}} 0%,{{{ Setting::getSettings()->header_color }}} 100%);
+        background: linear-gradient(to bottom, {{{ Setting::getSettings()->header_color }}} 0%,{{{ Setting::getSettings()->header_color }}} 100%);
 				border-color: {{{ Setting::getSettings()->header_color }}};
-                background-image: -moz-linear-gradient(top, {{{ Setting::getSettings()->header_color }}}, {{{ Setting::getSettings()->header_color }}});
 
 			}
 		@endif
@@ -100,8 +97,17 @@
     <body>
 
     <!-- navbar -->
+    @if ((Sentry::check()) && (Sentry::getUser()->hasAccess('admin')) && (Config::get('app.debug')) && (App::environment('production')))
+      <div class="row" style="margin-bottom: 0px; background-color: red; color: white; padding: 10px; font-size: 15px;">
+        <div class="col-md-12">
+        <i class="fa fa-warning fa-3x pull-left"></i> <strong>WARNING:</strong> This application is running in production mode with debugging enabled. This can expose sensitive data if your application is accessible to the outside world. Disable debug mode by setting the <i>debug</i> value app/config/production/app.php to <i>false</i>.
+        </div>
+      </div>
+    @endif
+
+
     <!-- navbar -->
-    <header class="navbar navbar" role="banner">
+    <header class="navbar navbar-inverse" role="banner">
 	    <div class="navbar-header">
             <button class="navbar-toggle" type="button" data-toggle="collapse" id="menu-toggler">
                 <span class="sr-only">Toggle navigation</span>
@@ -111,7 +117,12 @@
             </button>
 
 
-	            @if (Setting::getSettings()->logo)
+	            @if (Setting::getSettings()->brand == '3')
+                    <a class="navbar-brand" href="{{ Config::get('app.url') }}" style="padding: 5px;">
+                    <img src="{{ Config::get('app.url') }}/uploads/{{{ Setting::getSettings()->logo }}}">
+                    {{{ Setting::getSettings()->site_name }}}
+                    </a>
+                @elseif (Setting::getSettings()->brand == '2')
 	            	<a class="navbar-brand" href="{{ Config::get('app.url') }}" style="padding: 5px;">
 	            	<img src="{{ Config::get('app.url') }}/uploads/{{{ Setting::getSettings()->logo }}}">
 	            	</a>
@@ -120,44 +131,42 @@
 	            	{{{ Setting::getSettings()->site_name }}}
 	            	</a>
 	            @endif
-  <a class="navbar-brand" href="{{ Config::get('app.url') }}">
-			{{{ Setting::getSettings()->site_name }}} </a>        
-</div>
+        </div>
 
 
         <ul class="nav navbar-nav navbar-right">
             @if (Sentry::check())
 
-             @if(Sentry::getUser()->hasAccess('admin'))
+                 @if(Sentry::getUser()->hasAccess('admin'))
                  <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        <i class="fa fa-plus"></i> @lang('general.create')
+                        <i class="fa fa-plus fa-fw"></i> @lang('general.create')
                         <b class="caret"></b>
                     </a>
                     <ul class="dropdown-menu">
                        <li {{{ (Request::is('hardware/create') ? 'class="active"' : '') }}}>
                                <a href="{{ route('create/hardware') }}">
-                                   <i class="fa fa-barcode"></i>
+                                   <i class="fa fa-barcode fa-fw"></i>
                                    @lang('general.asset')</a>
                            </li>
                         <li {{{ (Request::is('admin/licenses/create') ? 'class="active"' : '') }}}>
                             <a href="{{ route('create/licenses') }}">
-                                <i class="fa fa-certificate"></i>
+                                <i class="fa fa-certificate fa-fw"></i>
                                 @lang('general.license')</a>
                         </li>
                         <li {{{ (Request::is('admin/accessories/create') ? 'class="active"' : '') }}}>
                             <a href="{{ route('create/accessory') }}">
-                                <i class="fa fa-keyboard-o"></i>
+                                <i class="fa fa-keyboard-o fa-fw"></i>
                                 @lang('general.accessory')</a>
                         </li>
                         <li {{{ (Request::is('admin/consumables/create') ? 'class="active"' : '') }}}>
                             <a href="{{ route('create/consumable') }}">
-                                <i class="fa fa-tint"></i>
+                                <i class="fa fa-tint fa-fw"></i>
                                 @lang('general.consumable')</a>
                         </li>
                         <li {{{ (Request::is('admin/users/create') ? 'class="active"' : '') }}}>
                             <a href="{{ route('create/user') }}">
-                            <i class="fa fa-user"></i>
+                            <i class="fa fa-user fa-fw"></i>
                             @lang('general.user')</a>
                         </li>
                     </ul>
@@ -165,30 +174,28 @@
                 @endif
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        {{{ Lang::get('general.welcome', array('name' => Sentry::getUser()->first_name)) }}}
-
-
+                        <i class="fa fa-user fa-fw"></i> {{{ Lang::get('general.welcome', array('name' => Sentry::getUser()->first_name)) }}}
                         <b class="caret"></b>
                     </a>
                     <ul class="dropdown-menu">
                         <li{{{ (Request::is('account/profile') ? ' class="active"' : '') }}}>
                          	<a href="{{ route('view-assets') }}">
-                                <i class="fa fa-check"></i> @lang('general.viewassets')
+                                <i class="fa fa-check fa-fw"></i> @lang('general.viewassets')
                         	</a>
                              <a href="{{ route('profile') }}">
-                                <i class="fa fa-user"></i> @lang('general.editprofile')
+                                <i class="fa fa-user fa-fw"></i> @lang('general.editprofile')
                             </a>
                              <a href="{{ route('change-password') }}">
-                                <i class="fa fa-lock"></i> @lang('general.changepassword')
+                                <i class="fa fa-lock fa-fw"></i> @lang('general.changepassword')
                             </a>
                             <a href="{{ route('change-email') }}">
-                                <i class="fa fa-envelope"></i> @lang('general.changeemail')
+                                <i class="fa fa-envelope fa-fw"></i> @lang('general.changeemail')
                             </a>
                         </li>
                         <li class="divider"></li>
                         <li>
                             <a href="{{ route('logout') }}">
-                                <i class="fa fa-sign-out"></i>
+                                <i class="fa fa-sign-out fa-fw"></i>
                                 @lang('general.logout')
                             </a>
                         </li>
@@ -197,59 +204,69 @@
                 @if(Sentry::getUser()->hasAccess('admin'))
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        <i class="fa fa-wrench icon-white"></i> @lang('general.admin')
+                        <i class="fa fa-wrench fa-fw"></i> @lang('general.admin')
                         <b class="caret"></b>
                     </a>
                     <ul class="dropdown-menu">
+                        <li{{ (Request::is('admin/settings/companies*') ? ' class="active"' : '') }}>
+                            <a href="{{ URL::to('admin/settings/companies') }}">
+                                <i class="fa fa-building-o fa-fw"></i> @lang('general.companies')
+                            </a>
+                        </li>
                         <li{{ (Request::is('hardware/models*') ? ' class="active"' : '') }}>
                             <a href="{{ URL::to('hardware/models') }}">
-                                <i class="fa fa-th"></i> @lang('general.asset_models')
+                                <i class="fa fa-th fa-fw"></i> @lang('general.asset_models')
                             </a>
                         </li>
                         <li{{ (Request::is('admin/settings/categories*') ? ' class="active"' : '') }}>
                             <a href="{{ URL::to('admin/settings/categories') }}">
-                                <i class="fa fa-check"></i> @lang('general.categories')
+                                <i class="fa fa-check fa-fw"></i> @lang('general.categories')
                             </a>
                         </li>
                         <li{{ (Request::is('admin/settings/manufacturers*') ? ' class="active"' : '') }}>
                             <a href="{{ URL::to('admin/settings/manufacturers') }}">
-                                <i class="fa fa-briefcase"></i> @lang('general.manufacturers')
+                                <i class="fa fa-briefcase fa-fw"></i> @lang('general.manufacturers')
                             </a>
                         </li>
                         <li{{ (Request::is('admin/settings/suppliers*') ? ' class="active"' : '') }}>
                             <a href="{{ URL::to('admin/settings/suppliers') }}">
-                                <i class="fa fa-credit-card"></i> @lang('general.suppliers')
+                                <i class="fa fa-credit-card fa-fw"></i> @lang('general.suppliers')
                             </a>
                         </li>
                         <li{{ (Request::is('admin/settings/statuslabels*') ? ' class="active"' : '') }}>
                             <a href="{{ URL::to('admin/settings/statuslabels') }}">
-                                <i class="fa fa-list"></i> @lang('general.status_labels')
+                                <i class="fa fa-list fa-fw"></i> @lang('general.status_labels')
                             </a>
                         </li>
                         <li{{ (Request::is('admin/settings/depreciations*') ? ' class="active"' : '') }}>
                             <a href="{{ URL::to('admin/settings/depreciations') }}">
-                                <i class="fa fa-arrow-down"></i> @lang('general.depreciation')
+                                <i class="fa fa-arrow-down fa-fw"></i> @lang('general.depreciation')
                             </a>
                         </li>
                         <li{{ (Request::is('admin/settings/locations*') ? ' class="active"' : '') }}>
                             <a href="{{ URL::to('admin/settings/locations') }}">
-                                <i class="fa fa-globe"></i> @lang('general.locations')
+                                <i class="fa fa-globe fa-fw"></i> @lang('general.locations')
                             </a>
                         </li>
                         <li{{ (Request::is('admin/groups*') ? ' class="active"' : '') }}>
                             <a href="{{ URL::to('admin/groups') }}">
-                                <i class="fa fa-group"></i> @lang('general.groups')
+                                <i class="fa fa-group fa-fw"></i> @lang('general.groups')
                             </a>
                         </li>
                         <li{{ (Request::is('admin/settings/backups*') ? ' class="active"' : '') }}>
                             <a href="{{ URL::to('admin/settings/backups') }}">
-                                <i class="fa fa-download"></i> @lang('admin/settings/general.backups')
+                                <i class="fa fa-download fa-fw"></i> @lang('admin/settings/general.backups')
+                            </a>
+                        </li>
+                        <li{{ (Request::is('admin/custom_fields*') ? ' class="active"' : '') }}>
+                            <a href="{{ route('admin.custom_fields.index') }}">
+                                <i class="fa fa-wrench fa-fw"></i> @lang('admin/custom_fields/general.custom_fields')
                             </a>
                         </li>
                         <li class="divider"></li>
                         <li>
                             <a href="{{ route('app') }}">
-                                <i class="fa fa-cog"></i> @lang('general.settings')
+                                <i class="fa fa-cog fa-fw"></i> @lang('general.settings')
                             </a>
                         </li>
 
@@ -271,7 +288,7 @@
         <ul id="dashboard-menu">
 			@if(Sentry::getUser()->hasAccess('admin'))
 			<li{{ (Request::is('*/') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
-                <a href="{{Config::get('app.url')}}"><i class="fa fa-dashboard"></i><span>Dashboard</span></a>
+                <a href="{{Config::get('app.url')}}"><i class="fa fa-dashboard"></i><span>@lang('general.dashboard')</span></a>
             </li>
             <li{{ (Request::is('hardware*') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
                 <a href="{{ URL::to('hardware') }}" class="dropdown-toggle">
@@ -282,12 +299,7 @@
 
                 <ul class="submenu{{ (Request::is('hardware*') ? ' active' : '') }}">
                     <li><a href="{{ URL::to('hardware?status=Deployed') }}" {{ (Request::query('status') == 'Deployed' ? ' class="active"' : '') }} >@lang('general.deployed')</a></li>
-		<li><a href="{{ URL::to('hardware?status=Facility') }}" {{ (Request::query('status') == '%Facility%' ? ' class="active"' : '') }} >@lang('general.facility')</a></li>
-  		<li><a href="{{ URL::to('hardware?status=Keys') }}" {{ (Request::query('status') == 'Available Keys' ? ' class="active"' : '') }} >@lang('general.keys')</a></li>
-		<li><a href="{{ URL::to('hardware?status=Lockers') }}" {{ (Request::query('status') == 'Available Lockers' ? ' class="active"' : '') }} >@lang('general.lockers')</a></li>
-
-		<li class="divider">&nbsp;</li>
-
+                    <li><a href="{{ URL::to('hardware?status=RTD') }}" {{ (Request::query('status') == 'RTD' ? ' class="active"' : '') }} >@lang('general.ready_to_deploy')</a></li>
                     <li><a href="{{ URL::to('hardware?status=Pending') }}" {{ (Request::query('status') == 'Pending' ? ' class="active"' : '') }} >@lang('general.pending')</a></li>
                     <li><a href="{{ URL::to('hardware?status=Undeployable') }}" {{ (Request::query('status') == 'Undeployable' ? ' class="active"' : '') }} >@lang('general.undeployable')</a></li>
                      <li><a href="{{ URL::to('hardware?status=Archived') }}" {{ (Request::query('status') == 'Archived' ? ' class="active"' : '') }} >@lang('admin/hardware/general.archived')</a></li>
@@ -356,49 +368,13 @@
             </li>
              @endif
              @if(!Sentry::getUser()->hasAccess('admin'))
-             	@if((isset($group))&&($group == "Limited User")) 
-		@else
-  <li{{ (Request::is('*/') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
-                <a href="{{route('view-assets')}}"><i class="fa fa-dashboard"></i><span>Dashboard</span></a>
-            </li>
-	<li{{ (Request::is('account/requestable-assets') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
+              <li{{ (Request::is('account/requestable-assets') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
                 <a href="{{ route('requestable-assets') }}">
                     <i class="fa fa-laptop"></i>
-                    <span>Asset Request</span>
+                    <span>@lang('admin/hardware/general.requestable')</span>
                 </a>
             </li>
-		<li{{ (Request::is('account/accessory-view') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
-                <a href="{{ route('accessory-view') }}">
-                    <i class="fa fa-keyboard-o"></i>
-                    <span>@lang('general.accessories')</span>
-                </a>
-            </li>
-      <li{{ (Request::is('account/consumable-view') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
-                <a href="{{ route('consumable-view') }}">
-                    <i class="fa fa-tint"></i>
-                    <span>@lang('general.consumables')</span>
-                </a>
-            </li>
-	<li{{ (Request::is('account/categories') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
-                            <a href="{{ route('categories') }}">
-                                <i class="fa fa-check"></i>
-                        <span>@lang('general.categories')</span>
-                            </a>
-                        </li>
-<li{{ (Request::is('account/license-view') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
-                <a href="{{ route('license-view') }}">
-                    <i class="fa fa-certificate"></i>
-                    <span>@lang('general.licenses')</span>
-                </a>
-            </li>
-  <li{{ (Request::is('account/facility-view') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
-                <a href="{{ route('facility-view') }}">
-                    <i class="fa fa-university"></i>
-                    <span>@lang('general.facility')</span>
-                </a>
-            </li> 
-@endif
-@endif
+            @endif
 
 
 
@@ -411,7 +387,6 @@
 
 <!-- main container -->
     <div class="content">
-
 
         @if ((Sentry::check()) && (Sentry::getUser()->hasAccess('admin')))
         @if (Request::is('/'))
@@ -476,9 +451,14 @@
 
         <div id="footer" class="col-md-offset-2 col-md-9 col-sm-12 col-xs-12 text-center">
 		                <div class="muted credit hidden-xs">
-	                  			<a target="_blank" href="http://danm.ucsc.edu">Digital Arts and New Media</a> |
-					  			<a target="_blank" href="http://arts.ucsc.edu">Arts Division</a> |
-							 <a target="_blank" href="http://www.ucsc.edu">UC Santa Cruz</a> 
+	                  			<a target="_blank" href="http://snipeitapp.com">Snipe IT</a> is a free open source
+					  		project by
+					  			<a target="_blank" href="http://twitter.com/snipeyhead">@snipeyhead</a>.
+						  		<a target="_blank" href="https://github.com/snipe/snipe-it">Fork it</a> |
+						  		<a target="_blank" href="http://docs.snipeitapp.com/">Documentation</a> |
+						  		<a target="_blank" href="http://docs.snipeitapp.com/translations.html">Translate It! </a> |
+						  		<a target="_blank" href="https://github.com/snipe/snipe-it/issues?state=open">Report a Bug</a>
+						  		 &nbsp; &nbsp; ({{{  Config::get('version.app_version') }}})
                   		</div>
         </div>
     </footer>
@@ -501,21 +481,22 @@
     </div>
 
     <!-- scripts -->
-    <script src="{{ asset('assets/js/bootstrap.min.js') }}"></script>
     <script src="{{ asset('assets/js/jquery.knob.js') }}"></script>
     <script src="{{ asset('assets/js/select2.min.js') }}"></script>
     <script src="{{ asset('assets/js/jquery.uniform.min.js') }}"></script>
     <script src="{{ asset('assets/js/bootstrap.datepicker.js') }}"></script>
     <script src="{{ asset('assets/js/theme.js') }}"></script>
     <script src="{{ asset('assets/js/snipeit.js') }}"></script>
-	<script>
-		$(function(){
-			$( ".ColVis" ).prepend('<button class="ColVis_Button">Reset Defaults</button>').click(function(e){
-				e.preventDefault();
-				oTable.api().state.clear();
-				window.location.reload();
-			});
-		});
-	</script>
+
+    <script>
+    $(document).ready(function(){
+        $('[data-toggle="popover"]').popover();
+    });
+    </script>
+
+
+    @section('moar_scripts')
+	@show
+
     </body>
 </html>

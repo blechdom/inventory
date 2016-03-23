@@ -1,7 +1,9 @@
 <?php
 
 return array(
-
+	'bulk_delete'		=> 'Confirmar Apagar ativos seleccionados',
+  'bulk_delete_help'	=> 'Reveja os ativos para apagar abaixo. Depois de apagados, estes ativos podem ser restaurados, mas não estarão associados aos utilizadores.',
+  'bulk_delete_warn'	=> 'Vai apagar :asset_count ativos.',
 	'bulk_update'		=> 'Atualização de ativos em massa',
 	'bulk_update_help'	=> 'Este formulário permite a atualização em massa de ativos. Preencha apenas os atributos que precisam de alteração. Qualquer atributo deixado em branco permanecerá inalterado. ',
 	'bulk_update_warn'	=> 'Está prestes a editar as propriedades :asset_count dos ativos.',

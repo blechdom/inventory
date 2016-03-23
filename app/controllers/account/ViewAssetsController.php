@@ -9,16 +9,16 @@ use Location;
 use View;
 use Asset;
 use Actionlog;
+use Company;
 use Lang;
 use Accessory;
-use Consumable;
-use Category;
-use License;
 use DB;
-use Mail;
 use Slack;
 use Setting;
 use Config;
+use Mail;
+use User;
+
 
 class ViewAssetsController extends AuthorizedController
 {
@@ -29,263 +29,31 @@ class ViewAssetsController extends AuthorizedController
      */
     public function getIndex()
     {
-    	$user = Sentry::getUser();
+
+      $user = User::with('assets', 'assets.model', 'consumables', 'accessories', 'licenses', 'userloc')->withTrashed()->find(Sentry::getUser()->id);
+
+      $userlog = $user->userlog->load('assetlog', 'consumablelog', 'assetlog.model', 'licenselog', 'accessorylog', 'userlog', 'adminlog');
 
 
-            if (isset($user->id)) {
 
-		$groups = $user->getGroups();
-
-                foreach($groups as $group)
-                {
-                        $group = $group->name;
-                }
-
-		$due_dates = DB::table('assets')
-			->join('asset_logs', 'assets.id', '=', 'asset_logs.asset_id')
-			->select('assets.id', 'assets.name', 'assets.asset_tag', 'assets.assigned_to', 'assets.model_id', 'asset_logs.asset_id', 'asset_logs.expected_checkin', 'asset_logs.checkedout_to')
-			->where('asset_logs.checkedout_to', $user->id)
-			->where('assets.assigned_to', $user->id)
-			->where('asset_logs.action_type', 'checkout')
-			->orderBy('asset_logs.expected_checkin', 'desc')
-			->get();
-
-			
-
-                return View::make('frontend/account/view-assets', compact('user', 'group', 'due_dates'));
-            } else {
-                // Prepare the error message
-                $error = Lang::get('admin/users/message.user_not_found', compact('id' ));
-
-                // Redirect to the user management page
-                return Redirect::route('users')->with('error', $error);
-            }
-
-	}
-public function getCategories()
-    {
-        
-	// Show the page
-	$categories = Category::select(array('id', 'name', 'category_type'))
-	->whereNull('deleted_at');
-	
-	$categories = $categories->get();
-        return View::make('frontend/account/categories', compact('categories'));
-    }
-public function getCategoryView($categoryID = null)
-    {
-        $category = Category::find($categoryID);
-	if (isset($category->id)) {	
-		if ($category->category_type=='asset')
-		{	
-			$assets = $category->assets;
-			return View::make('frontend/account/category-assets', compact('user', 'assets', 'category'));
-		}
-		elseif ($category->category_type=='accessory')
-		{
-			$accessories = $category->accessories;
-			return View::make('frontend/account/category-accessories', compact('user', 'accessories', 'category'));
-		}
-		elseif ($category->category_type=='consumable')
-                {
-                        $consumables = $category->consumables;
-                        return View::make('frontend/account/category-consumables', compact('user', 'consumables', 'category'));
-                }
+        if (isset($user->id)) {
+            return View::make('frontend/account/view-assets', compact('user', 'userlog'));
         } else {
             // Prepare the error message
-            $error = Lang::get('admin/categories/message.does_not_exist', compact('id'));
+            $error = Lang::get('admin/users/message.user_not_found', compact('id' ));
 
             // Redirect to the user management page
-            return Redirect::route('categories')->with('error', $error);
+            return Redirect::route('users')->with('error', $error);
         }
 
+	}
 
-    }
-public function getRequestableIndex() {
 
-	$assets = Asset::with('model','defaultLoc')->Hardware()->RequestableAssets()->get();
+	public function getRequestableIndex() {
+
+		$assets = Asset::with('model','defaultLoc')->Hardware()->RequestableAssets()->get();
+
         return View::make('frontend/account/requestable-assets', compact('user','assets'));
- }
- public function getViewItem($assetId = null) {
-
-  	$asset = Asset::withTrashed()->find($assetId);
-
-	return View::make('frontend/account/view-item', compact('user','asset'));
-    }
- public function getAccessoryIndex()
-    { 
-	 $accessories = Accessory::select(array('id','name','qty', 'category_id'))
-        ->whereNull('deleted_at')
-        ->orderBy('created_at', 'DESC');
-
-        $accessories = $accessories->get();
-
-
-        return View::make('frontend/account/accessory-view', compact('accessories'));
-    }
-public function getAccessoryView($accessoryId = null)
-    {
-         $accessory = Accessory::withTrashed()->find($accessoryId);
-
-        return View::make('frontend/account/view-accessory', compact('accessory'));
-    }
-public function getConsumableIndex()
-    {
-         $consumables = Consumable::select(array('id','name','qty', 'category_id'))
-        ->whereNull('deleted_at')
-        ->orderBy('created_at', 'DESC');
-
-        $consumables = $consumables->get();
-
-
-        return View::make('frontend/account/consumable-view', compact('consumables'));
-    }
-public function getConsumableView($consumableId = null)
-    {
-         $consumable = Consumable::withTrashed()->find($consumableId);
-
-        return View::make('frontend/account/view-consumable', compact('consumable'));
-    }
-public function getLicenseIndex()
-    {
-
-        $licenses = License::select(array('name', 'id'))
-        ->whereNull('deleted_at')
-        ->orderBy('created_at', 'DESC');
-
-        $licenses = $licenses->get();
-
-
-        return View::make('frontend/account/license-view', compact('licenses'));
-} 
-public function getFacilityIndex()
-    {
-
-        $assets = Asset::with('model','defaultLoc')->Facility()->get();
-        return View::make('frontend/account/facility-view', compact('assets'));
-    }
-
-    public function getLicenseRequest($licenseId = null) {
-
-	$user = Sentry::getUser();
-
-	$license = License::find($licenseId);
-
-
-	if (is_null($license)) {
-            return Redirect::route('license-view')->with('error', Lang::get('admin/hardware/message.does_not_exist_or_not_requestable'));
-        } else {
-
-                                                $logaction = new Actionlog();
-                                      $logaction->asset_id = $license->id;          //$logaction->item = $license->name;
-						$logaction->asset_id = NULL;
-                                                $logaction->asset_type = 'software';
-                                                $logaction->user_id = $user->id;
-                                                $logaction->note =  //e(Input::get('note'));
-                                                $logaction->checkedout_to =  NULL;
-                                                //$logaction->created_at = NULL; //date("Y-m-d h:i:s");
-                                              //  $logaction->filename =  $filename;
-                                               $log = $logaction->logaction('requested');
-
-
-
-
-
-
-		$data['log_id'] = $logaction->id;
-            $data['first_name'] = $user->first_name;
-              $data['last_name'] = $user->last_name;
-                $data['item_name'] = $license->name;
-            $data['checkin_date'] = $logaction->created_at;
-            $data['item_tag'] = 'License';
-            $data['email'] = $user->email;
-
-	if (($user) && (!Config::get('app.lock_passwords'))) { 
-                Mail::send('emails.request-license', $data, function ($m) use ($user) {
-                        $m->to($user->email, $user->first_name . ' ' . $user->last_name);
-                        $m->subject('Confirm License Request');
-                    });
-          Mail::send('emails.request-license-alert', $data, function ($m) use ($user) {
-                         $m->to('kge@ucsc.edu', 'DANM EQUIPMENT CHECKOUT & INVENTORY');
-            $m->subject('License Requested');
-                        });
-        } 
-        return Redirect::route('license-view')->with('success', Lang::get('admin/hardware/message.requests.success'));
-        }
-    }
-
-	public function getRequestExtension($assetId = null) {
-
-        $user = Sentry::getUser();
-
-        // Check if the asset exists and is requestable
-if (is_null($asset = Asset::withTrashed()->find($assetId))) {
-            // Redirect to the asset management page
-            return Redirect::route('view-assets')->with('error', Lang::get('admin/hardware/message.does_not_exist_or_not_requestable'));
-        } else {
-            $logaction = new Actionlog();
-            $logaction->asset_id = $asset->id;
-            $logaction->asset_type = 'hardware';
-            $logaction->created_at =  date("Y-m-d h:i:s");
-
-            if ($user->location_id) {
-                $logaction->location_id = $user->location_id;
-            }
-            $logaction->user_id = Sentry::getUser()->id;
-            $log = $logaction->logaction('requested');
-		$settings = Setting::getSettings();
-
-                        if ($settings->slack_endpoint) {
-
-
-                                $slack_settings = [
-                                    'username' => $settings->botname,
-                                    'channel' => $settings->slack_channel,
-                                    'link_names' => true
-                                ];
-
-                                $client = new \Maknz\Slack\Client($settings->slack_endpoint,$slack_settings);
-
-                                try {
-                                                $client->attach([
-                                                    'color' => 'good',
-                                                    'fields' => [
-                                                        [
-                                                            'title' => 'EXTENSION REQUESTED FOR:',
-                                                            'value' => strtoupper($logaction->asset_type).' asset <'.Config::get('app.url').'/hardware/'.$asset->id.'/view'.'|'.$asset->showAssetName().'> requested by <'.Config::get('app.url').'/hardware/'.$asset->id.'/view'.'|'.Sentry::getUser()->fullName().'>.'
-                                                        ]
-
-                                                    ]
-                                                ])->send('Asset Extension Requested');
-
-                                        } catch (Exception $e) {
-
-                                        }
-
-                        }
-		$data['log_id'] = $logaction->id;
-            $data['first_name'] = $user->first_name;
-              $data['last_name'] = $user->last_name;
-                $data['item_name'] = $asset->showAssetName();
-            $data['checkin_date'] = $logaction->created_at;
-            $data['item_tag'] = $asset->asset_tag;
-            $data['note'] = $logaction->note;
-            $data['email'] = $user->email;
-
-           if (($user) && (!Config::get('app.lock_passwords'))) {
-                Mail::send('emails.request-extension', $data, function ($m) use ($user) {
-                        $m->to($user->email, $user->first_name . ' ' . $user->last_name);
-                        $m->subject('Confirm Asset Request');
-                        });
-                  Mail::send('emails.request-extension-alert', $data, function ($m) use ($user) {
-                         $m->to('kge@ucsc.edu', 'DANM EQUIPMENT CHECKOUT');
-        $m->subject('Checkout Extension Requested');
-                        });
-                }
-                return Redirect::route('view-assets')->with('success')->with('success', Lang::get('admin/hardware/message.requestExtension.success'));
-       } 
-
-
     }
 
 
@@ -297,69 +65,66 @@ if (is_null($asset = Asset::withTrashed()->find($assetId))) {
         if (is_null($asset = Asset::RequestableAssets()->find($assetId))) {
             // Redirect to the asset management page
             return Redirect::route('requestable-assets')->with('error', Lang::get('admin/hardware/message.does_not_exist_or_not_requestable'));
-        } else {
+        }
+        else if (!Company::isCurrentUserHasAccess($asset)) {
+            return Redirect::route('requestable-assets')->with('error', Lang::get('general.insufficient_permissions'));
+        }
+        else {
 
             $logaction = new Actionlog();
-            $logaction->asset_id = $asset->id;
-            $logaction->asset_type = 'hardware';
-            $logaction->created_at =  date("Y-m-d h:i:s");
+            $logaction->asset_id = $data['asset_id'] = $asset->id;
+            $logaction->asset_type = $data['asset_type']  = 'hardware';
+            $logaction->created_at = $data['requested_date'] = date("Y-m-d h:i:s");
 
             if ($user->location_id) {
                 $logaction->location_id = $user->location_id;
             }
-            $logaction->user_id = Sentry::getUser()->id;
+            $logaction->user_id = $data['user_id'] = Sentry::getUser()->id;
             $log = $logaction->logaction('requested');
+
+            $data['requested_by'] = $user->fullName();
+            $data['asset_name'] = $asset->showAssetName();
 
             $settings = Setting::getSettings();
 
-			if ($settings->slack_endpoint) {
+            if (($settings->alert_email!='')  && ($settings->alerts_enabled=='1') && (!Config::get('app.lock_passwords'))) {
+                Mail::send('emails.asset-requested', $data, function ($m) use ($user, $settings) {
+                	$m->to($settings->alert_email, $settings->site_name);
+                	$m->subject('Asset Requested');
+                });
+            }
 
 
-				$slack_settings = [
-				    'username' => $settings->botname,
-				    'channel' => $settings->slack_channel,
-				    'link_names' => true
-				];
+      			if ($settings->slack_endpoint) {
 
-				$client = new \Maknz\Slack\Client($settings->slack_endpoint,$slack_settings);
 
-				try {
-						$client->attach([
-						    'color' => 'good',
-						    'fields' => [
-						        [
-						            'title' => 'REQUESTED:',
-						            'value' => strtoupper($logaction->asset_type).' asset <'.Config::get('app.url').'/hardware/'.$asset->id.'/view'.'|'.$asset->showAssetName().'> requested by <'.Config::get('app.url').'/hardware/'.$asset->id.'/view'.'|'.Sentry::getUser()->fullName().'>.'
-						        ]
+      				$slack_settings = [
+      				    'username' => $settings->botname,
+      				    'channel' => $settings->slack_channel,
+      				    'link_names' => true
+      				];
 
-						    ]
-						])->send('Asset Requested');
+      				$client = new \Maknz\Slack\Client($settings->slack_endpoint,$slack_settings);
 
-					} catch (Exception $e) {
+      				try {
+      						$client->attach([
+      						    'color' => 'good',
+      						    'fields' => [
+      						        [
+      						            'title' => 'REQUESTED:',
+      						            'value' => strtoupper($logaction->asset_type).' asset <'.Config::get('app.url').'/hardware/'.$asset->id.'/view'.'|'.$asset->showAssetName().'> requested by <'.Config::get('app.url').'/hardware/'.$asset->id.'/view'.'|'.Sentry::getUser()->fullName().'>.'
+      						        ]
 
-					}
+      						    ]
+      						])->send('Asset Requested');
 
-			}
-$data['log_id'] = $logaction->id;
-            $data['first_name'] = $user->first_name;
-              $data['last_name'] = $user->last_name;
-		$data['item_name'] = $asset->showAssetName();
-            $data['checkin_date'] = $logaction->created_at;
-            $data['item_tag'] = $asset->asset_tag;
-            $data['note'] = $logaction->note;
-	    $data['email'] = $user->email;
+      					} catch (Exception $e) {
 
-           if (($user) && (!Config::get('app.lock_passwords'))) { 
-                Mail::send('emails.request-asset', $data, function ($m) use ($user) {
-                        $m->to($user->email, $user->first_name . ' ' . $user->last_name);
-                        $m->subject('Confirm Asset Request');
-                	});
-		  Mail::send('emails.request-asset-alert', $data, function ($m) use ($user) {
-                         $m->to('kge@ucsc.edu', 'DANM EQUIPMENT CHECKOUT');
-			$m->subject('Asset Requested');
-                        });
-		}
-		return Redirect::route('requestable-assets')->with('success')->with('success', Lang::get('admin/hardware/message.requests.success'));
+      					}
+
+      			}
+
+            return Redirect::route('requestable-assets')->with('success')->with('success', Lang::get('admin/hardware/message.requests.success'));
         }
 
 
@@ -373,6 +138,12 @@ $data['log_id'] = $logaction->id;
 	    if (is_null($findlog = Actionlog::find($logID))) {
             // Redirect to the asset management page
             return Redirect::to('account')->with('error', Lang::get('admin/hardware/message.does_not_exist'));
+        }
+
+        $user = Sentry::getUser();
+
+        if ($user->id != $findlog->checkedout_to) {
+            return Redirect::to('account/view-assets')->with('error', Lang::get('admin/users/message.error.incorrect_user_accepted'));
         }
 
         // Asset
@@ -392,17 +163,16 @@ $data['log_id'] = $logaction->id;
             // Redirect to the asset management page
             return Redirect::to('account')->with('error', Lang::get('admin/hardware/message.does_not_exist'));
         }
-
-        return View::make('frontend/account/accept-asset', compact('item'))->with('findlog', $findlog);
-
-
-
-
+        else if (!Company::isCurrentUserHasAccess($item)) {
+            return Redirect::route('requestable-assets')->with('error', Lang::get('general.insufficient_permissions'));
+        }
+        else {
+            return View::make('frontend/account/accept-asset', compact('item'))->with('findlog', $findlog);
+        }
     }
 
     // Save the acceptance
     public function postAcceptAsset($logID = null) {
-
 
 	  	// Check if the asset exists
         if (is_null($findlog = Actionlog::find($logID))) {
@@ -410,6 +180,11 @@ $data['log_id'] = $logaction->id;
             return Redirect::to('account/view-assets')->with('error', Lang::get('admin/hardware/message.does_not_exist'));
         }
 
+        // NOTE: make sure the global scope is applied
+        $is_unauthorized = is_null(Actionlog::where('id', '=', $logID)->first());
+        if ($is_unauthorized) {
+            return Redirect::route('requestable-assets')->with('error', Lang::get('general.insufficient_permissions'));
+        }
 
         if ($findlog->accepted_id!='') {
             // Redirect to the asset management page
@@ -421,6 +196,11 @@ $data['log_id'] = $logaction->id;
         }
 
     	$user = Sentry::getUser();
+
+        if ($user->id != $findlog->checkedout_to) {
+            return Redirect::to('account/view-assets')->with('error', Lang::get('admin/users/message.error.incorrect_user_accepted'));
+        }
+
 		$logaction = new Actionlog();
 
         if (Input::get('asset_acceptance')=='accepted') {
@@ -467,11 +247,12 @@ $data['log_id'] = $logaction->id;
 		$log = $logaction->logaction($logaction_msg);
 
 		$update_checkout = DB::table('asset_logs')
-			->where('id',$findlog->id)
-			->update(array('accepted_id' => $logaction->id));
-    $affected_asset=$logaction->assetlog;
-    $affected_asset->accepted=$accepted;
-    $affected_asset->save();
+		->where('id',$findlog->id)
+		->update(array('accepted_id' => $logaction->id));
+
+            $affected_asset=$logaction->assetlog;
+            $affected_asset->accepted=$accepted;
+            $affected_asset->save();
 
 		if ($update_checkout ) {
 			return Redirect::to('account/view-assets')->with('success', $return_msg);
@@ -479,14 +260,5 @@ $data['log_id'] = $logaction->id;
 		} else {
 			return Redirect::to('account/view-assets')->with('error', 'Something went wrong ');
 		}
-
-
-
-
-
     }
-
-
-
-
 }

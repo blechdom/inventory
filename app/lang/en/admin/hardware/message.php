@@ -7,14 +7,7 @@ return array(
     'does_not_exist' 	=> 'Asset does not exist.',
     'does_not_exist_or_not_requestable' => 'Nice try. That asset does not exist or is not requestable.',
     'assoc_users'	 	=> 'This asset is currently checked out to a user and cannot be deleted. Please check the asset in first, and then try deleting again. ',
-    'requests' => array(
-	'error' 		=> 'Asset could not be requested, please try again. :(',
-	'success'		=> 'An email has been sent to the DANM Technical Staff. Please arrange to pick up the item soon.',	
-    ),
-	'requestExtension' => array(
-        'error'                 => 'Extension could not be requested, please try again, or contact DANM Technical Staff. :(',
-        'success'               => 'An email has been sent to the DANM Technical Staff. You will be contacted soon to confirm your extension, and to schedule a new checkin date.',
-    ),
+
     'create' => array(
         'error'   		=> 'Asset was not created, please try again. :(',
         'success' 		=> 'Asset created successfully. :)'
@@ -60,6 +53,11 @@ return array(
         'error'   		=> 'Asset was not checked in, please try again',
         'success' 		=> 'Asset checked in successfully.',
         'user_does_not_exist' => 'That user is invalid. Please try again.'
+    ),
+
+    'requests' => array(
+        'error'   		=> 'Asset was not requested, please try again',
+        'success' 		=> 'Asset requested successfully.',
     )
 
 );

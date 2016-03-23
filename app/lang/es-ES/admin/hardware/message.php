@@ -53,6 +53,11 @@ return array(
         'error'   		=> 'No se ha quitado el equipo. Intentalo de nuevo.',
         'success' 		=> 'Equipo quitado correctamente.',
         'user_does_not_exist' => 'Este usuario no es correcto. Intentalo de nuevo.'
+    ),
+
+    'requests' => array(
+        'error'   		=> 'Bien no solicitado, por favor inténtelo de nuevo',
+        'success' 		=> 'Bien solicitado correctamente.',
     )
 
 );

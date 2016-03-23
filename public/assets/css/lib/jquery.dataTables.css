@@ -168,7 +168,7 @@ table.dataTable tr.even td.sorting_3 { background-color: #F9F9FF; }
 	border: 1px solid #ddd;
 	padding: 5px 10px;
 	cursor: pointer;
-	color: #2dbfc6 !important;
+	color: #428bca !important;
 	border-left: 0px;
 }
 
@@ -182,8 +182,8 @@ table.dataTable tr.even td.sorting_3 { background-color: #F9F9FF; }
 }
 
 .paging_full_numbers a.paginate_active {
-	background-color: #2dbfc6;
-	border-color: #2dbfc6;
+	background-color: #428bca;
+	border-color: #428bca;
 	color: #fff !important;
 }
 

@@ -27,7 +27,7 @@
             'local'      => [ 'homestead', 'AlisonMBP' ],
             'travis-ci'  => getenv('APP_ENV') == 'travis-ci',
             'staging'    => [ 'stagingweb01' ],
-            'production' => [ 'dhcp-74-165.ucsc.edu' ]
+            'production' => [ 'www.yourserver.com' ]
         ] );
 
     /*

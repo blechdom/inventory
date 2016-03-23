@@ -7,7 +7,7 @@
 
 <p><a href="{{ $forgotPasswordUrl }}">{{ $forgotPasswordUrl }}</a></p>
 
-<p>love,</p>
+<p>Best regards,</p>
 
 <p>{{{ Setting::getSettings()->site_name }}}</p>
 @stop

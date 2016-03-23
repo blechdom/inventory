@@ -1,6 +1,5 @@
 @extends('backend/layouts/default')
 
-
 {{-- Page title --}}
 @section('title')
 
@@ -48,7 +47,7 @@
         </div>
 
 
-        <!-- Form actions - testing github commit -->
+        <!-- Form actions -->
         <div class="form-group">
             <div class="col-md-7 col-md-offset-3">
                 <button type="submit" class="btn btn-success">Submit </button>

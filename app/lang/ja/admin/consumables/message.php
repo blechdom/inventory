@@ -15,9 +15,9 @@ return array(
     ),
 
     'delete' => array(
-        'confirm'   => 'この付属品を本当に削除してもよいですか？',
+        'confirm'   => 'この消耗品を削除しますか？',
         'error'   => '消耗品の削除に失敗しました。もう一度試して下さい。',
-        'success' => '付属品の削除に成功しました。'
+        'success' => '消耗品は削除されました。'
     ),
 
      'checkout' => array(

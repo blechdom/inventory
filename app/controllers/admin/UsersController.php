@@ -14,6 +14,7 @@ use DB;
 use Input;
 use User;
 use Asset;
+use Company;
 use Lang;
 use Actionlog;
 use Location;
@@ -31,6 +32,8 @@ use Mail;
 use Accessory;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use Crypt;
+
 
 class UsersController extends AdminController {
 
@@ -40,13 +43,14 @@ class UsersController extends AdminController {
      * @var array
      */
     protected $validationRules = array(
-        'first_name' => 'required|alpha_space|min:2',
-        'last_name' => 'required|alpha_space|min:2',
-        'location_id' => 'numeric',
-        'username' => 'required|min:2|unique:users,username',
-        'email' => 'email|unique:users,email',
-        'password' => 'required|min:6',
-        'password_confirm' => 'required|min:6|same:password',
+      'first_name' => 'required|alpha_space|min:1',
+      'last_name' => 'required|alpha_space|min:1',
+      'location_id' => 'numeric',
+      'username' => 'required|min:2|unique:users,deleted_at,NULL',
+      'email' => 'email|unique:users,email',
+      'password' => 'required|min:6',
+      'password_confirm' => 'required|min:6|same:password',
+      'company_id' => 'integer',
     );
 
     /**
@@ -82,6 +86,7 @@ class UsersController extends AdminController {
 
         $location_list = locationsList();
         $manager_list = managerList();
+        $company_list = companyList();
 
         /* echo '<pre>';
           print_r($userPermissions);
@@ -93,6 +98,7 @@ class UsersController extends AdminController {
         return View::make('backend/users/edit', compact('groups', 'userGroups', 'permissions', 'userPermissions'))
                         ->with('location_list', $location_list)
                         ->with('manager_list', $manager_list)
+                        ->with('company_list', $company_list)
                         ->with('user', new User);
     }
 
@@ -102,6 +108,12 @@ class UsersController extends AdminController {
      * @return Redirect
      */
     public function postCreate() {
+
+        // echo '<pre>';
+        // print_r($this->validationRules);
+        // echo '</pre>';
+        // exit;
+
         // Create a new validator instance from our validation rules
         $validator = Validator::make(Input::all(), $this->validationRules);
         $permissions = Input::get('permissions', array());
@@ -119,6 +131,8 @@ class UsersController extends AdminController {
             // permissions here before we create the user.
             // Get the inputs, with some exceptions
             $inputs = Input::except('csrf_token', 'password_confirm', 'groups', 'email_user');
+
+            $inputs['company_id'] = Company::getIdForUser(Input::get('company_id'));
 
             // @TODO: Figure out WTF I need to do this.
             if ($inputs['manager_id'] == '') {
@@ -252,6 +266,10 @@ class UsersController extends AdminController {
             // Get the user information
             $user = Sentry::getUserProvider()->findById($id);
 
+            if (!Company::isCurrentUserHasAccess($user)) {
+                return Redirect::route('users')->with('error', Lang::get('general.insufficient_permissions'));
+            }
+
             // Get this user groups
             $userGroups = $user->groups()->lists('group_id', 'name');
 
@@ -266,7 +284,8 @@ class UsersController extends AdminController {
             $permissions = Config::get('permissions');
             $this->encodeAllPermissions($permissions);
 
-            $location_list = array('' => '') + Location::lists('name', 'id');
+            $location_list = locationsList();
+            $company_list = companyList();
             $manager_list = array('' => 'Select a User') + DB::table('users')
                             ->select(DB::raw('concat(last_name,", ",first_name," (",email,")") as full_name, id'))
                             ->whereNull('deleted_at')
@@ -285,6 +304,7 @@ class UsersController extends AdminController {
         // Show the page
         return View::make('backend/users/edit', compact('user', 'groups', 'userGroups', 'permissions', 'userPermissions'))
                         ->with('location_list', $location_list)
+                        ->with('company_list', $company_list)
                         ->with('manager_list', $manager_list);
     }
 
@@ -309,6 +329,10 @@ class UsersController extends AdminController {
         try {
             // Get the user information
             $user = Sentry::getUserProvider()->findById($id);
+
+            if (!Company::isCurrentUserHasAccess($user)) {
+                return Redirect::route('users')->with('error', Lang::get('general.insufficient_permissions'));
+            }
         } catch (UserNotFoundException $e) {
             // Prepare the error message
             $error = Lang::get('admin/users/message.user_not_found', compact('id'));
@@ -347,18 +371,21 @@ class UsersController extends AdminController {
 
         try {
             // Update the user
-            $user->first_name = Input::get('first_name');
-            $user->last_name = Input::get('last_name');
-            $user->username = Input::get('username');
-            $user->email = Input::get('email');
-            $user->employee_num = Input::get('employee_num');
-            $user->activated = Input::get('activated', $user->activated);
-            $user->permissions = Input::get('permissions');
-            $user->jobtitle = Input::get('jobtitle');
-            $user->phone = Input::get('phone');
+            $user->first_name = e(Input::get('first_name'));
+            $user->last_name = e(Input::get('last_name'));
+            $user->username = e(Input::get('username'));
+            $user->email = e(Input::get('email'));
+            $user->employee_num = e(Input::get('employee_num'));
+            $user->activated = e(Input::get('activated', $user->activated));
+            if (Sentry::getUser()->hasAccess('superuser')) {
+              $user->permissions = Input::get('permissions');
+            }
+            $user->jobtitle = e(Input::get('jobtitle'));
+            $user->phone = e(Input::get('phone'));
             $user->location_id = Input::get('location_id');
+            $user->company_id = Company::getIdForUser(Input::get('company_id'));
             $user->manager_id = Input::get('manager_id');
-            $user->notes = Input::get('notes');
+            $user->notes = e(Input::get('notes'));
 
             if ($user->manager_id == "") {
                 $user->manager_id = NULL;
@@ -376,7 +403,7 @@ class UsersController extends AdminController {
 
             // Do we want to update the user email?
             if (!Config::get('app.lock_passwords')) {
-                $user->email = Input::get('email');
+                $user->email = e(Input::get('email'));
             }
 
             // Get the current user groups
@@ -412,7 +439,7 @@ class UsersController extends AdminController {
                 $success = Lang::get('admin/users/message.success.update');
 
                 // Redirect to the user page
-                return Redirect::route('view/user', $id)->with('success', $success);
+                return Redirect::route('users')->with('success', $success);
             }
 
             // Prepare the error message
@@ -486,9 +513,12 @@ class UsersController extends AdminController {
         if ((!Input::has('edit_user')) || (count(Input::has('edit_user')) == 0)) {
             return Redirect::back()->with('error', 'No users selected');
         } else {
-            $statuslabel_list = array('' => Lang::get('general.select_statuslabel')) + Statuslabel::orderBy('name', 'asc')->lists('name', 'id');
-            $user_raw_array = Input::get('edit_user');
-            $users = User::whereIn('id', $user_raw_array)->with('groups')->get();
+            $statuslabel_list = statusLabelList();
+            $user_raw_array = array_keys(Input::get('edit_user'));
+
+            $users = User::whereIn('id', $user_raw_array)->with('groups');
+            $users = Company::scopeCompanyables($users)->get();
+
             return View::make('backend/users/confirm-bulk-delete', compact('users', 'statuslabel_list'));
         }
     }
@@ -508,11 +538,17 @@ class UsersController extends AdminController {
                 unset($user_raw_array[$key]);
             }
 
+            if (!Sentry::getUser()->isSuperUser()) {
+                return Redirect::route('users')->with('error', Lang::get('admin/users/message.insufficient_permissions'));
+            }
+
             if (!Config::get('app.lock_passwords')) {
 
                 $assets = Asset::whereIn('assigned_to', $user_raw_array)->get();
                 $accessories = DB::table('accessories_users')->whereIn('assigned_to', $user_raw_array)->get();
-                $users = User::whereIn('id', $user_raw_array)->delete();
+
+                $users = User::whereIn('id', $user_raw_array);
+                $users = Company::scopeCompanyables($users)->delete();
 
                 foreach ($assets as $asset) {
 
@@ -530,7 +566,7 @@ class UsersController extends AdminController {
                     $update_assets = Asset::whereIn('id', $asset_array)->update(
                             array(
                                 'status_id' => e(Input::get('status_id')),
-                                'assigned_to' => '',
+                                'assigned_to' => null,
                     ));
                 }
 
@@ -545,9 +581,9 @@ class UsersController extends AdminController {
                     $logaction->note = 'Bulk checkin';
                     $log = $logaction->logaction('checkin from');
 
-                    $update_assets = DB::table('accessories_users')->whereIn('id', $accessory_array)->update(
+                    $update_accessories = DB::table('accessories_users')->whereIn('id', $accessory_array)->update(
                             array(
-                                'assigned_to' => '',
+                                'assigned_to' => null,
                     ));
                 }
 
@@ -557,6 +593,7 @@ class UsersController extends AdminController {
                 return Redirect::route('users')->with('error', 'Bulk delete is not enabled in this installation');
             }
 
+            /** @noinspection PhpUnreachableStatementInspection Known to be unreachable but kept following discussion: https://github.com/snipe/snipe-it/pull/1423 */
             return Redirect::route('users')->with('error', 'An error has occurred');
         }
     }
@@ -572,14 +609,20 @@ class UsersController extends AdminController {
             // Get user information
             $user = Sentry::getUserProvider()->createModel()->withTrashed()->find($id);
 
-            // Restore the user
-            $user->restore();
+            if (!Company::isCurrentUserHasAccess($user)) {
+                return Redirect::route('users')->with('error', Lang::get('general.insufficient_permissions'));
+            }
+            else
+            {
+                // Restore the user
+                $user->restore();
 
-            // Prepare the success message
-            $success = Lang::get('admin/users/message.success.restored');
+                // Prepare the success message
+                $success = Lang::get('admin/users/message.success.restored');
 
-            // Redirect to the user management page
-            return Redirect::route('users')->with('success', $success);
+                // Redirect to the user management page
+                return Redirect::route('users')->with('success', $success);
+            }
         } catch (UserNotFoundException $e) {
             // Prepare the error message
             $error = Lang::get('admin/users/message.user_not_found', compact('id'));
@@ -602,7 +645,12 @@ class UsersController extends AdminController {
         $userlog = $user->userlog->load('assetlog', 'consumablelog', 'assetlog.model', 'licenselog', 'accessorylog', 'userlog', 'adminlog');
 
         if (isset($user->id)) {
-            return View::make('backend/users/view', compact('user', 'userlog'));
+
+            if (!Company::isCurrentUserHasAccess($user)) {
+                return Redirect::route('users')->with('error', Lang::get('general.insufficient_permissions'));
+            } else {
+                return View::make('backend/users/view', compact('user', 'userlog'));
+            }
         } else {
             // Prepare the error message
             $error = Lang::get('admin/users/message.user_not_found', compact('id'));
@@ -689,6 +737,7 @@ class UsersController extends AdminController {
             $this->encodeAllPermissions($permissions);
 
             $location_list = array('' => '') + Location::lists('name', 'id');
+            $company_list = companyList();
             $manager_list = array('' => 'Select a User') + DB::table('users')
                             ->select(DB::raw('concat(last_name,", ",first_name," (",email,")") as full_name, id'))
                             ->whereNull('deleted_at')
@@ -700,6 +749,7 @@ class UsersController extends AdminController {
             // Show the page
             return View::make('backend/users/edit', compact('groups', 'userGroups', 'permissions', 'userPermissions'))
                             ->with('location_list', $location_list)
+                            ->with('company_list', $company_list)
                             ->with('manager_list', $manager_list)
                             ->with('user', $user)
                             ->with('clone_user', $user_to_clone);
@@ -762,7 +812,15 @@ class UsersController extends AdminController {
                     $activated = '0';
                 }
 
-                $pass = substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 10);
+                $pass = substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 15);
+
+                // Location
+          			if (array_key_exists('4',$row)) {
+          				$user_location_id = trim($row[4]);
+                  if ($user_location_id=='') {
+                    $user_location_id = null;
+                  }
+          			}
 
 
 
@@ -780,7 +838,11 @@ class UsersController extends AdminController {
                             'email' => $row[3],
                             'password' => $pass,
                             'activated' => $activated,
-                            'location_id' => $row[4],
+                            'location_id' => $user_location_id,
+                            'phone' => $row[5],
+                            'jobtitle' => $row[6],
+                            'employee_num' => $row[7],
+                            //'company_id' => Company::getIdForUser($row[8]),
                             'permissions' => '{"user":1}',
                             'notes' => 'Imported user'
                         );
@@ -824,100 +886,130 @@ class UsersController extends AdminController {
         return Redirect::route('users')->with('duplicates', $duplicates)->with('success', 'Success');
     }
 
-    public function getDatatable($status = null) {
+    public function getDatatable($status = null)
+    {
 
-        $users = User::with('assets', 'accessories', 'consumables', 'licenses', 'manager', 'sentryThrottle', 'groups', 'userloc');
-
-        switch ($status) {
-            case 'deleted':
-                $users->GetDeleted();
-                break;
-            case '':
-                $users->GetNotDeleted();
-                break;
+        if (Input::has('offset')) {
+            $offset = e(Input::get('offset'));
+        } else {
+            $offset = 0;
         }
 
-        $users = $users->orderBy('created_at', 'DESC')->get();
+        if (Input::has('limit')) {
+            $limit = e(Input::get('limit'));
+        } else {
+            $limit = 50;
+        }
 
-        $actions = new \Chumper\Datatable\Columns\FunctionColumn('actions', function ($users) {
-            $action_buttons = '';
+        if (Input::get('sort')=='name') {
+            $sort = 'first_name';
+        } else {
+            $sort = e(Input::get('sort'));
+        }
+
+        $users = User::select(array('users.id','users.employee_num','users.email','users.username','users.location_id','users.manager_id','users.first_name','users.last_name','users.created_at','users.notes','users.company_id', 'users.deleted_at','users.activated'))
+        ->with('assets','accessories','consumables','licenses','manager','sentryThrottle','groups','userloc','company');
+        $users = Company::scopeCompanyables($users);
+
+        switch ($status) {
+        case 'deleted':
+          $users = $users->withTrashed()->Deleted();
+          break;
+        }
+
+         if (Input::has('search')) {
+             $users = $users->TextSearch(Input::get('search'));
+         }
+
+         $order = Input::get('order') === 'asc' ? 'asc' : 'desc';
+
+         switch (Input::get('sort'))
+         {
+             case 'manager':
+                $users = $users->OrderManager($order);
+               break;
+             case 'location':
+                $users = $users->OrderLocation($order);
+              break;
+             default:
+                $allowed_columns =
+                [
+                  'last_name','first_name','email','username','employee_num',
+                  'assets','accessories', 'consumables','licenses','groups','activated'
+                ];
+
+                $sort = in_array($sort, $allowed_columns) ? $sort : 'first_name';
+                $users = $users->orderBy($sort, $order);
+             break;
+         }
+
+        $userCount = $users->count();
+        $users = $users->skip($offset)->take($limit)->get();
+        $rows = array();
+
+        foreach ($users as $user)
+        {
+
+            $group_names = '';
+            $inout = '';
+            $actions = '<nobr>';
+
+            foreach ($user->groups as $group) {
+                $group_names .= '<a href="' . Config::get('app.url') . '/admin/groups/' . $group->id . '/edit" class="label  label-default">' . e($group->name) . '</a> ';
+            }
 
 
-            if (!is_null($users->deleted_at)) {
-                $action_buttons .= '<a href="' . route('restore/user', $users->id) . '" class="btn btn-warning btn-sm"><i class="fa fa-share icon-white"></i></a> ';
+            if (!is_null($user->deleted_at)) {
+
+                $actions .= '<a href="' . route('restore/user', $user->id) . '" class="btn btn-warning btn-sm"><i class="fa fa-share icon-white"></i></a> ';
             } else {
-                if ($users->accountStatus() == 'suspended') {
-                    $action_buttons .= '<a href="' . route('unsuspend/user', $users->id) . '" class="btn btn-default btn-sm"><span class="fa fa-clock-o"></span></a> ';
+
+                if ($user->accountStatus() == 'suspended') {
+                    $actions .= '<a href="' . route('unsuspend/user', $user->id) . '" class="btn btn-default btn-sm"><span class="fa fa-clock-o"></span></a> ';
                 }
 
-                $action_buttons .= '<a href="' . route('update/user', $users->id) . '" class="btn btn-warning btn-sm"><i class="fa fa-pencil icon-white"></i></a> ';
+                $actions .= '<a href="' . route('update/user', $user->id) . '" class="btn btn-warning btn-sm"><i class="fa fa-pencil icon-white"></i></a> ';
 
-                if ((Sentry::getId() !== $users->id) && (!Config::get('app.lock_passwords'))) {
-                    $action_buttons .= '<a data-html="false" class="btn delete-asset btn-danger btn-sm" data-toggle="modal" href="' . route('delete/user', $users->id) . '" data-content="Are you sure you wish to delete this user?" data-title="Delete ' . htmlspecialchars($users->first_name) . '?" onClick="return false;"><i class="fa fa-trash icon-white"></i></a> ';
+                if ((Sentry::getId() !== $user->id) && (!Config::get('app.lock_passwords'))) {
+                    $actions .= '<a data-html="false" class="btn delete-asset btn-danger btn-sm" data-toggle="modal" href="' . route('delete/user', $user->id) . '" data-content="Are you sure you wish to delete this user?" data-title="Delete ' . htmlspecialchars($user->first_name) . '?" onClick="return false;"><i class="fa fa-trash icon-white"></i></a> ';
                 } else {
-                    $action_buttons .= ' <span class="btn delete-asset btn-danger btn-sm disabled"><i class="fa fa-trash icon-white"></i></span>';
+                    $actions .= ' <span class="btn delete-asset btn-danger btn-sm disabled"><i class="fa fa-trash icon-white"></i></span>';
                 }
             }
-            return $action_buttons;
-        });
+            $actions .= '</nobr>';
 
+            $rows[] = array(
+                'id'         => $user->id,
+                'checkbox'      =>'<div class="text-center hidden-xs hidden-sm"><input type="checkbox" name="edit_user['.$user->id.']" class="one_required"></div>',
+                'name'          => '<a title="'.$user->fullName().'" href="../admin/users/'.$user->id.'/view">'.$user->fullName().'</a>',
+                'email'         => ($user->email!='') ?
+                            '<a href="mailto:'.e($user->email).'" class="hidden-md hidden-lg">'.e($user->email).'</a>'
+                            .'<a href="mailto:'.e($user->email).'" class="hidden-xs hidden-sm"><i class="fa fa-envelope"></i></a>'
+                            .'</span>' : '',
+                'username'         => e($user->username),
+                'location'      => ($user->userloc) ? e($user->userloc->name) : '',
+                'manager'         => ($user->manager) ? '<a title="' . e($user->manager->fullName()) . '" href="users/' . $user->manager->id . '/view">' . e($user->manager->fullName()) . '</a>' : '',
+                'assets'        => $user->assets->count(),
+                'employee_num'  => e($user->employee_num),
+                'licenses'        => $user->licenses->count(),
+                'accessories'        => $user->accessories->count(),
+                'consumables'        => $user->consumables->count(),
+                'groups'        => $group_names,
+                'notes'         => e($user->notes),
+                'activated'      => ($user->activated=='1') ? '<i class="fa fa-check"></i>' : '<i class="fa fa-times"></i>',
+                'actions'       => ($actions) ? $actions : '',
+                'companyName'   => is_null($user->company) ? '' : e($user->company->name)
+            );
+        }
 
-        return Datatable::collection($users)
-                        ->addColumn('', function($users) {
-                            return '<div class="text-center"><input type="checkbox" name="edit_user[]" value="' . $users->id . '" class="one_required"></div>';
-                        })
-                        ->addColumn('name', function($users) {
-                            return '<a title="' . $users->fullName() . '" href="users/' . $users->id . '/view">' . $users->fullName() . '</a>';
-                        })
-                        ->addColumn('email', function($users) {
-                            if ($users->email) {
-                                return '<div class="text-center"><a title="' . $users->email . '" href="mailto:' . $users->email . '"><i class="fa fa-envelope fa-lg"></i></div>';
-                            } else {
-                                return '';
-                            }
-                        })
-                        ->addColumn('username', function($users) {
-                            return $users->username;
-                        })
-                        ->addColumn('manager', function($users) {
-                            if ($users->manager) {
-                                return '<a title="' . $users->manager->fullName() . '" href="users/' . $users->manager->id . '/view">' . $users->manager->fullName() . '</a>';
-                            }
-                        })
-                        ->addColumn('location', function($users) {
-                            if ($users->userloc) {
-                                return $users->userloc->name;
-                            }
-                        })
-                        ->addColumn('assets', function($users) {
-                            return $users->assets->count();
-                        })
-                        ->addColumn('licenses', function($users) {
-                            return $users->licenses->count();
-                        })
-                        ->addColumn('accessories', function($users) {
-                            return $users->accessories->count();
-                        })
-                        ->addColumn('consumables', function($users) {
-                            return $users->consumables->count();
-                        })
-                        ->addColumn('groups', function($users) {
-                            $group_names = '';
-                            foreach ($users->groups as $group) {
-                                $group_names .= '<a href="' . Config::get('app.url') . '/admin/groups/' . $group->id . '/edit" class="label  label-default">' . $group->name . '</a> ';
-                            }
-                            return $group_names;
-                        })
-                        ->addColumn($actions)
-                        ->searchColumns('name', 'email', 'username', 'manager', 'activated', 'groups', 'location')
-                        ->orderColumns('name', 'email', 'username', 'manager', 'activated', 'licenses', 'assets', 'accessories', 'consumables', 'groups', 'location')
-                        ->make();
+        $data = array('total'=>$userCount, 'rows'=>$rows);
+        return $data;
     }
 
     /**
      *  Upload the file to the server
      *
-     * @param  int  $assetId
+     * @param  int  $userId
      * @return View
      * */
     public function postUpload($userId = null) {
@@ -928,7 +1020,10 @@ class UsersController extends AdminController {
 
         if (isset($user->id)) {
 
-            if (Input::hasFile('userfile')) {
+            if (!Company::isCurrentUserHasAccess($user)) {
+                return Redirect::route('users')->with('error', Lang::get('general.insufficient_permissions'));
+            }
+            else if (Input::hasFile('userfile')) {
 
                 foreach (Input::file('userfile') as $file) {
 
@@ -979,7 +1074,8 @@ class UsersController extends AdminController {
     /**
      *  Delete the associated file
      *
-     * @param  int  $assetId
+     * @param  int  $userId
+     * @param  int  $fileId
      * @return View
      * */
     public function getDeleteFile($userId = null, $fileId = null) {
@@ -989,13 +1085,19 @@ class UsersController extends AdminController {
         // the license is valid
         if (isset($user->id)) {
 
-            $log = Actionlog::find($fileId);
-            $full_filename = $destinationPath . '/' . $log->filename;
-            if (file_exists($full_filename)) {
-                unlink($destinationPath . '/' . $log->filename);
+            if (!Company::isCurrentUserHasAccess($user)) {
+                return Redirect::route('users')->with('error', Lang::get('general.insufficient_permissions'));
             }
-            $log->delete();
-            return Redirect::back()->with('success', Lang::get('admin/users/message.deletefile.success'));
+            else
+            {
+                $log = Actionlog::find($fileId);
+                $full_filename = $destinationPath . '/' . $log->filename;
+                if (file_exists($full_filename)) {
+                    unlink($destinationPath . '/' . $log->filename);
+                }
+                $log->delete();
+                return Redirect::back()->with('success', Lang::get('admin/users/message.deletefile.success'));
+            }
         } else {
             // Prepare the error message
             $error = Lang::get('admin/users/message.does_not_exist', compact('id'));
@@ -1008,7 +1110,8 @@ class UsersController extends AdminController {
     /**
      *  Display/download the uploaded file
      *
-     * @param  int  $assetId
+     * @param  int  $userId
+     * @param  int  $fileId
      * @return View
      * */
     public function displayFile($userId = null, $fileId = null) {
@@ -1017,9 +1120,15 @@ class UsersController extends AdminController {
 
         // the license is valid
         if (isset($user->id)) {
-            $log = Actionlog::find($fileId);
-            $file = $log->get_src();
-            return Response::download($file);
+            if (!Company::isCurrentUserHasAccess($user)) {
+                return Redirect::route('users')->with('error', Lang::get('general.insufficient_permissions'));
+            }
+            else
+            {
+                $log = Actionlog::find($fileId);
+                $file = $log->get_src();
+                return Response::download($file);
+            }
         } else {
             // Prepare the error message
             $error = Lang::get('admin/users/message.does_not_exist', compact('id'));
@@ -1063,7 +1172,7 @@ class UsersController extends AdminController {
     protected $ldapValidationRules = array(
         'firstname' => 'required|alpha_space|min:2',
         'lastname' => 'required|alpha_space|min:2',
-        'employee_number' => 'numeric',
+        'employee_number' => 'alpha_space',
         'username' => 'required|min:2|unique:users,username',
         'email' => 'email|unique:users,email',
     );
@@ -1094,20 +1203,27 @@ class UsersController extends AdminController {
             return Redirect::back()->withInput()->withErrors($formValidator);
         }
 
-        $ldap_version = Config::get('ldap.version');
-        $url = Config::get('ldap.url');
-        $username = Config::get('ldap.username');
-        $password = Config::get('ldap.password');
-        $base_dn = Config::get('ldap.basedn');
-        $filter = Config::get('ldap.filter');
+        $ldap_version = Setting::getSettings()->ldap_version;
+        $url = Setting::getSettings()->ldap_server;
+        $username = Setting::getSettings()->ldap_uname;
+        $password = Crypt::decrypt(Setting::getSettings()->ldap_pword);
+        $base_dn = Setting::getSettings()->ldap_basedn;
+        $filter = Setting::getSettings()->ldap_filter;
 
-        $ldap_result_username = Config::get('ldap.result.username');
-        $ldap_result_emp_num = Config::get('ldap.result.emp.num');
-        $ldap_result_last_name = Config::get('ldap.result.last.name');
-        $ldap_result_first_name = Config::get('ldap.result.first.name');
-        $ldap_result_email = Config::get('ldap.result.email');
-        $ldap_result_active_flag = Config::get('ldap.result.active.flag');
+        $ldap_result_username = Setting::getSettings()->ldap_username_field;
+        $ldap_result_last_name = Setting::getSettings()->ldap_lname_field;
+        $ldap_result_first_name = Setting::getSettings()->ldap_fname_field;
 
+        $ldap_result_active_flag = Setting::getSettings()->ldap_active_flag_field;
+        $ldap_result_emp_num = Setting::getSettings()->ldap_emp_num;
+        $ldap_result_email = Setting::getSettings()->ldap_email;
+        $ldap_server_cert_ignore = Setting::getSettings()->ldap_server_cert_ignore;
+
+        // If we are ignoring the SSL cert we need to setup the environment variable
+        // before we create the connection
+        if($ldap_server_cert_ignore) {
+            putenv('LDAPTLS_REQCERT=never');
+        }
 
         // Connect to LDAP server
         $ldapconn = @ldap_connect($url);
@@ -1127,6 +1243,8 @@ class UsersController extends AdminController {
 
         // Binding to ldap server
         $ldapbind = @ldap_bind($ldapconn, $username, $password);
+
+        Log::error(ldap_errno($ldapconn));
         if (!$ldapbind) {
             return Redirect::route('users')->with('error', Lang::get('admin/users/message.error.ldap_could_not_bind').ldap_error($ldapconn));
         }
